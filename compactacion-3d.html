@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Niveles de Compactación del Material Genético y Epigenética 3D</title>
+    <!-- Tailwind CSS para el diseño de la UI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome para iconos limpios -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Three.js para renderizado 3D -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- OrbitControls para navegación de cámara cómoda -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #05050a;
+            color: #e2e8f0;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        /* Custom scrollbar para los paneles informativos */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(30, 30, 40, 0.5);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(100, 116, 139, 0.5);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(148, 163, 184, 0.8);
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col md:flex-row overflow-hidden select-none">
+
+    <!-- PANEL LATERAL DE CONTROL E INFORMACIÓN -->
+    <div class="w-full md:w-96 bg-slate-950/95 border-b md:border-b-0 md:border-r border-slate-800 flex flex-col h-1/2 md:h-full z-10 shadow-2xl overflow-y-auto custom-scrollbar">
+        <!-- Header -->
+        <div class="p-5 border-b border-slate-800 bg-slate-900/50">
+            <div class="flex items-center gap-2 mb-1">
+                <span class="text-xs font-bold tracking-widest text-emerald-400 uppercase bg-emerald-950 px-2 py-1 rounded">Cromatina 3D</span>
+            </div>
+            <h1 class="text-xl font-extrabold text-white tracking-tight leading-snug">Compactación del ADN</h1>
+            <p class="text-xs text-slate-400 mt-1">Explora desde la doble hélice hasta el solenoide y el impacto ambiental directo en tus genes.</p>
+        </div>
+
+        <!-- SECCIÓN NUEVA: SIMULADOR DE ESTILO DE VIDA (EPIGENÉTICA CONDUCTUAL) -->
+        <div class="p-5 border-b border-slate-800 bg-slate-900/20">
+            <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-2.5 flex items-center gap-2">
+                <i class="fa-solid fa-heart-pulse text-emerald-400 animate-pulse"></i> Simulador de Estilo de Vida
+            </h2>
+            <p class="text-[11px] text-slate-400 mb-3">La dieta y el estrés envían señales químicas que apagan (metilación) o encienden (acetilación) genes específicos de tu ADN:</p>
+            
+            <div class="space-y-2">
+                <!-- Escenario: Estrés Laboral -->
+                <button onclick="applyLifestyle('stress')" id="btn-env-stress" class="w-full text-left p-2.5 rounded-lg border border-slate-800 hover:border-red-900/80 bg-slate-900/40 hover:bg-red-950/20 transition-all flex items-center justify-between group">
+                    <div class="pr-2">
+                        <span class="text-xs font-bold text-slate-200 group-hover:text-red-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-briefcase text-red-500 text-[10px]"></i> Estrés Laboral Crónico
+                        </span>
+                        <p class="text-[10px] text-slate-500 mt-0.5">Metilación de promotores del gen protector cerebral <strong>BDNF</strong>.</p>
+                    </div>
+                    <span class="text-[9px] font-bold text-red-400 bg-red-950 border border-red-900/50 px-1.5 py-0.5 rounded uppercase shrink-0">Apagar BDNF</span>
+                </button>
+
+                <!-- Escenario: Vegetales Crucíferas -->
+                <button onclick="applyLifestyle('vegetables')" id="btn-env-veg" class="w-full text-left p-2.5 rounded-lg border border-slate-800 hover:border-emerald-900/80 bg-slate-900/40 hover:bg-emerald-950/20 transition-all flex items-center justify-between group">
+                    <div class="pr-2">
+                        <span class="text-xs font-bold text-slate-200 group-hover:text-emerald-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-seedling text-emerald-500 text-[10px]"></i> Vegetales (Crucíferas)
+                        </span>
+                        <p class="text-[10px] text-slate-500 mt-0.5">El sulforafano inhibe las <strong>HDAC</strong>, acetilando y activando el gen protector <strong>Nrf2</strong>.</p>
+                    </div>
+                    <span class="text-[9px] font-bold text-emerald-400 bg-emerald-950 border border-emerald-900/50 px-1.5 py-0.5 rounded uppercase shrink-0">Activar Nrf2</span>
+                </button>
+
+                <!-- Escenario: Frituras / Comida Basura -->
+                <button onclick="applyLifestyle('junkfood')" id="btn-env-junk" class="w-full text-left p-2.5 rounded-lg border border-slate-800 hover:border-amber-900/80 bg-slate-900/40 hover:bg-amber-950/20 transition-all flex items-center justify-between group">
+                    <div class="pr-2">
+                        <span class="text-xs font-bold text-slate-200 group-hover:text-amber-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-burger text-amber-500 text-[10px]"></i> Frituras y Grasas Trans
+                        </span>
+                        <p class="text-[10px] text-slate-500 mt-0.5">Induce deacetilación cromatínica, silenciando el gen antiinflamatorio <strong>SIRT1</strong>.</p>
+                    </div>
+                    <span class="text-[9px] font-bold text-amber-400 bg-amber-950 border border-amber-900/50 px-1.5 py-0.5 rounded uppercase shrink-0">Apagar SIRT1</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Selector de Niveles -->
+        <div class="p-5 border-b border-slate-800">
+            <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-layer-group text-sky-400"></i> Niveles de Organización
+            </h2>
+            <div class="grid grid-cols-1 gap-2">
+                <button onclick="changeLevel(1)" id="btn-lvl-1" class="btn-level w-full text-left p-3 rounded-lg border transition-all flex items-center justify-between bg-sky-950/40 border-sky-500/50 text-white">
+                    <div class="flex items-center gap-3">
+                        <span class="w-7 h-7 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold text-xs">1</span>
+                        <div>
+                            <p class="text-xs font-semibold">Doble Hélice de ADN</p>
+                            <p class="text-[10px] text-sky-300">Nivel de 2 nm de grosor</p>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-dna text-sky-400"></i>
+                </button>
+
+                <button onclick="changeLevel(2)" id="btn-lvl-2" class="btn-level w-full text-left p-3 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-900/50 hover:bg-slate-900 transition-all flex items-center justify-between text-slate-300">
+                    <div class="flex items-center gap-3">
+                        <span class="w-7 h-7 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center font-bold text-xs">2</span>
+                        <div>
+                            <p class="text-xs font-semibold">Estructura del Nucleosoma</p>
+                            <p class="text-[10px] text-slate-400">Octámero de histonas (11 nm)</p>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-circle text-purple-400"></i>
+                </button>
+
+                <button onclick="changeLevel(3)" id="btn-lvl-3" class="btn-level w-full text-left p-3 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-900/50 hover:bg-slate-900 transition-all flex items-center justify-between text-slate-300">
+                    <div class="flex items-center gap-3">
+                        <span class="w-7 h-7 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center font-bold text-xs">3</span>
+                        <div>
+                            <p class="text-xs font-semibold">Organización en Solenoide</p>
+                            <p class="text-[10px] text-slate-400">Fibra de 30 nm (Seis nucleosomas)</p>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-circle-nodes text-amber-400"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Módulo Epigenético Químico -->
+        <div class="p-5 border-b border-slate-800 bg-slate-950/40">
+            <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-wand-magic-sparkles text-pink-400"></i> Modificaciones Químicas
+            </h2>
+            
+            <div class="space-y-4">
+                <!-- Acetilación -->
+                <div class="bg-slate-900/80 p-3 rounded-lg border border-pink-950/50">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-pink-500 shadow-[0_0_8px_#ec4899]"></span>
+                            <span class="text-xs font-bold text-slate-200">Acetilación (Grupos Acetilo)</span>
+                        </div>
+                        <span class="text-[10px] text-pink-400 bg-pink-950/50 px-1.5 py-0.5 rounded font-mono font-bold">Relaja ADN</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="applyAcetylation(true)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-1.5 px-2 rounded text-[11px] flex items-center justify-center gap-1 transition-colors">
+                            <i class="fa-solid fa-plus-circle"></i> Acetilar (HAT)
+                        </button>
+                        <button onclick="applyAcetylation(false)" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-1.5 px-2 rounded text-[11px] flex items-center justify-center gap-1 transition-colors">
+                            <i class="fa-solid fa-minus-circle"></i> Desacetilar (HDAC)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Metilación -->
+                <div class="bg-slate-900/80 p-3 rounded-lg border border-cyan-950/50">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee]"></span>
+                            <span class="text-xs font-bold text-slate-200">Metilación (Grupos Metilo)</span>
+                        </div>
+                        <span class="text-[10px] text-cyan-400 bg-cyan-950/50 px-1.5 py-0.5 rounded font-mono font-bold">Compacta ADN</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="applyMethylation(true)" class="bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-1.5 px-2 rounded text-[11px] flex items-center justify-center gap-1 transition-colors">
+                            <i class="fa-solid fa-plus-circle"></i> Metilar (HMT)
+                        </button>
+                        <button onclick="applyMethylation(false)" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-1.5 px-2 rounded text-[11px] flex items-center justify-center gap-1 transition-colors">
+                            <i class="fa-solid fa-minus-circle"></i> Desmetilar (KDM)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leyenda / Identificador de Elementos -->
+        <div class="p-5 mt-auto">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Código de Colores 3D</h3>
+            <div class="grid grid-cols-2 gap-2 text-[11px]">
+                <div class="flex items-center gap-1.5 text-slate-300">
+                    <span class="w-3 h-3 rounded bg-blue-500"></span> ADN Doble Hélice
+                </div>
+                <div class="flex items-center gap-1.5 text-slate-300">
+                    <span class="w-3 h-3 rounded bg-red-500"></span> H2A / H2B (Naranja/Rojo)
+                </div>
+                <div class="flex items-center gap-1.5 text-slate-300">
+                    <span class="w-3 h-3 rounded bg-green-500"></span> H3 / H4 (Verde/Azul)
+                </div>
+                <div class="flex items-center gap-1.5 text-slate-300">
+                    <span class="w-3 h-3 rounded bg-amber-500"></span> Histona H1 de Enlace
+                </div>
+                <div class="flex items-center gap-1.5 text-slate-300">
+                    <span class="w-3 h-3 rounded bg-pink-500"></span> Grupos Acetilo
+                </div>
+                <div class="flex items-center gap-1.5 text-slate-300">
+                    <span class="w-3 h-3 rounded bg-cyan-400"></span> Grupos Metilo
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA PRINCIPAL DEL MODELO 3D -->
+    <div class="flex-1 relative h-1/2 md:h-full flex flex-col">
+        <!-- Contenedor WebGL Canvas -->
+        <div id="canvas-container" class="absolute inset-0 w-full h-full"></div>
+
+        <!-- MONITOR DE EXPRESIÓN GÉNICA FLOTANTE (ESTILO DE VIDA) -->
+        <div class="absolute top-16 right-4 bg-slate-950/90 border border-slate-800 p-4 rounded-xl shadow-2xl backdrop-blur max-w-sm z-10">
+            <div class="flex items-center gap-2 mb-2 pb-2 border-b border-slate-800">
+                <i class="fa-solid fa-microscope text-cyan-400"></i>
+                <h4 class="text-xs font-bold text-slate-200 uppercase tracking-wider">Monitor de Transcripción</h4>
+            </div>
+            
+            <div class="space-y-3">
+                <div>
+                    <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+                        <span>Gen Seleccionado:</span>
+                        <span id="gene-name" class="font-bold text-white">-</span>
+                    </div>
+                    <div class="flex justify-between text-[10px] text-slate-400">
+                        <span>Función Celular:</span>
+                        <span id="gene-function" class="text-slate-300 font-medium text-right max-w-[180px]">-</span>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+                    <div class="flex justify-between items-center mb-1.5">
+                        <span class="text-[10px] font-semibold text-slate-400 uppercase">Tasa de Expresión:</span>
+                        <span id="gene-rate-badge" class="text-xs font-bold px-1.5 py-0.5 rounded bg-slate-950 text-slate-400">0%</span>
+                    </div>
+                    <!-- Barra de progreso -->
+                    <div class="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800">
+                        <div id="gene-progress-bar" class="bg-slate-700 h-full transition-all duration-700 w-[0%]"></div>
+                    </div>
+                </div>
+
+                <div class="text-[10px] text-slate-400 bg-slate-900/40 p-2 rounded border border-slate-800/50">
+                    <span class="font-bold text-slate-300">Biomarcador:</span>
+                    <p id="gene-consequences" class="text-slate-400 mt-0.5 leading-relaxed">-</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- HUD Flotante: Indicaciones y Explicación Científica del nivel actual -->
+        <div class="absolute bottom-4 left-4 right-4 bg-slate-900/90 border border-slate-800 p-4 rounded-xl shadow-2xl pointer-events-auto backdrop-blur max-h-48 overflow-y-auto custom-scrollbar md:max-w-2xl">
+            <div class="flex justify-between items-start mb-1">
+                <h3 id="info-title" class="text-sm font-extrabold text-white uppercase tracking-wider">Cargando...</h3>
+                <span id="info-scale" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-sky-400">---</span>
+            </div>
+            <p id="info-desc" class="text-xs text-slate-300 leading-relaxed">
+                Inicializando simulación biológica 3D...
+            </p>
+            <div id="epigenetic-status" class="mt-2 pt-2 border-t border-slate-800 flex flex-wrap gap-2 text-[10px]">
+                <span class="text-slate-400">Estado de cromatina:</span>
+                <span id="status-acetyl" class="font-bold text-pink-400">Acetilación: Desactivada</span>
+                <span class="text-slate-600">|</span>
+                <span id="status-methyl" class="font-bold text-cyan-400">Metilación: Desactivada</span>
+                <span class="text-slate-600">|</span>
+                <span id="status-compaction" class="font-bold text-emerald-400">Compactación: Normal</span>
+            </div>
+        </div>
+
+        <!-- Instrucciones en Pantalla de Interacción -->
+        <div class="absolute top-4 right-4 bg-slate-950/80 text-slate-400 p-2 rounded-lg text-[10px] pointer-events-none border border-slate-800 flex items-center gap-3">
+            <span><i class="fa-solid fa-arrows-to-eye"></i> Arrastrar: Rotar cámara</span>
+            <span><i class="fa-solid fa-circle-minus"></i> Scroll: Zoom</span>
+        </div>
+
+        <!-- Título superior dinámico flotante -->
+        <div class="absolute top-4 left-4 pointer-events-none">
+            <div class="bg-slate-950/80 border border-slate-800 px-3 py-1.5 rounded-lg flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                <span class="text-xs font-mono font-bold tracking-wider text-slate-200" id="current-view-tag">VISTA: DOBLE HÉLICE ADN</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT DE CONTROL Y RENDERIZADO 3D -->
+    <script>
+        // Variables globales
+        let scene, camera, renderer, controls;
+        let currentLevel = 1;
+        
+        // Contenedores de grupos de objetos 3D
+        let activeGroup = null;
+        let dnaGroup = null;
+        let nucleosomeGroup = null;
+        let solenoidGroup = null;
+
+        // Variables de Estado Epigenético
+        let isAcetylated = false;
+        let isMethylated = false;
+        let acetylationFactor = 0.0; // 0 a 1 para animar transiciones de apertura
+        let methylationFactor = 0.0; // 0 a 1 para animar contracción
+
+        // Referencias a grupos específicos de modificaciones para poder encender/apagar visualmente
+        let acetylMarkers = [];
+        let methylMarkers = [];
+        let dnaSpiralMesh = null;
+        let histoneCores = [];
+        let histoneTails = [];
+
+        // Datos descriptivos por cada nivel
+        const levelData = {
+            1: {
+                title: "Doble Hélice de ADN (2 nm)",
+                scale: "Ø ~ 2 nanómetros",
+                viewTag: "VISTA: DOBLE HÉLICE ADN",
+                desc: "La estructura primaria del material genético propuesta por Watson y Crick en 1953. Consiste en dos cadenas polinucleotídicas antiparalelas enrolladas de manera dextrógira alrededor de un eje central. El esqueleto de azúcar-fosfato se dispone en el exterior con carga neta negativa, mientras que las bases nitrogenadas se aparean en el interior mediante puentes de hidrógeno (Adenina-Timina, Citocina-Guanina)."
+            },
+            2: {
+                title: "Estructura del Nucleosoma (11 nm)",
+                scale: "Ø ~ 11 nanómetros",
+                viewTag: "VISTA: NUCLEOSOMA (CUENTAS DE COLLAR)",
+                desc: "La unidad fundamental de la cromatina. El ADN se enrolla aproximadamente 1.67 vueltas (unos 147 pares de bases) alrededor de un octámero de proteínas histonas denominadas 'Core' o núcleo central (dos copias de H2A, H2B, H3 y H4). La histona de enlace H1 sella el ADN a la entrada y salida de la partícula nuclear. Sus colas aminoterminales cargadas positivamente sobresalen del octámero y son diana para modificaciones moleculares."
+            },
+            3: {
+                title: "Organización en Solenoide (Fibra de 30 nm)",
+                scale: "Ø ~ 30 nanómetros",
+                viewTag: "VISTA: SOLENOIDE (FIBRA CROMATINA)",
+                desc: "Nivel superior de compactación donde la cadena de 'cuentas de collar' de nucleosomas se enrolla sobre sí misma en una hélice regular. Se agrupan típicamente unos 6 nucleosomas por vuelta celular, estabilizados fundamentalmente por las interacciones de las histonas H1 y las colas cargadas de las histonas del octámero. Es la forma en la que se organiza la eucromatina en interfase inactiva."
+            }
+        };
+
+        // Escenarios de estilo de vida y genética
+        const lifestyleData = {
+            'stress': {
+                geneName: "BDNF",
+                geneFunction: "Plasticidad cerebral y memoria",
+                rate: "10%",
+                rateClass: "text-red-500 bg-red-950/80 border border-red-900/50",
+                progressWidth: "10%",
+                progressBarColor: "bg-red-500",
+                consequences: "El cortisol elevado recluta metiltransferasas de ADN. Esto genera hipermetilación de los promotores de BDNF, cerrando la cromatina e inhibiendo la memoria y la neurogénesis cerebral.",
+                acetyl: false,
+                methyl: true
+            },
+            'vegetables': {
+                geneName: "Nrf2",
+                geneFunction: "Defensa antioxidante celular",
+                rate: "95%",
+                rateClass: "text-emerald-400 bg-emerald-950/80 border border-emerald-900/50",
+                progressWidth: "95%",
+                progressBarColor: "bg-emerald-500",
+                consequences: "Los compuestos del brócoli (sulforafano) inhiben las enzimas HDAC. Como consecuencia, las histonas permanecen altamente acetiladas, abriendo el ADN para transcribir genes antioxidantes.",
+                acetyl: true,
+                methyl: false
+            },
+            'junkfood': {
+                geneName: "SIRT1",
+                geneFunction: "Longevidad y control de inflamación",
+                rate: "20%",
+                rateClass: "text-amber-500 bg-amber-950/80 border border-amber-900/50",
+                progressWidth: "20%",
+                progressBarColor: "bg-amber-500",
+                consequences: "Las grasas trans aumentan la actividad de las desacetilasas (HDAC), deacetilando la histona H3. Esto compacta el locus del gen SIRT1, bloqueando los mecanismos naturales antiinflamatorios del cuerpo.",
+                acetyl: false,
+                methyl: false
+            }
+        };
+
+        // Función de inicialización
+        function init() {
+            const container = document.getElementById('canvas-container');
+            
+            // 1. Crear Escena con niebla sutil
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x06060c);
+            scene.fog = new THREE.FogExp2(0x06060c, 0.015);
+
+            // 2. Configurar Cámara
+            camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(0, 5, 25);
+
+            // 3. Configurar Renderizador con antialiasing
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            container.appendChild(renderer.domElement);
+
+            // 4. Controles de Órbita (Corregido a THREE.OrbitControls)
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxDistance = 150;
+            controls.minDistance = 5;
+
+            // 5. Configurar Iluminación
+            setupLights();
+
+            // 6. Generar todos los niveles
+            buildDNA_Level1();
+            buildNucleosome_Level2();
+            buildSolenoid_Level3();
+
+            // Seleccionar el primer nivel por defecto
+            changeLevel(1);
+
+            // 7. Eventos de tamaño de ventana
+            window.addEventListener('resize', onWindowResize);
+
+            // 8. Iniciar bucle de animación
+            animate();
+        }
+
+        function setupLights() {
+            // Luz ambiental suave para no dejar sombras negras absolutas
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+            scene.add(ambientLight);
+
+            // Luz direccional principal (sol simulado)
+            const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight1.position.set(15, 30, 20);
+            scene.add(dirLight1);
+
+            // Luz direccional complementaria de tinte azul/morado para atmósfera de laboratorio
+            const dirLight2 = new THREE.DirectionalLight(0x4338ca, 0.6);
+            dirLight2.position.set(-15, -15, -15);
+            scene.add(dirLight2);
+
+            // Punto de luz suave y cálido que resalta el centro molecular
+            const pointLight = new THREE.PointLight(0xf59e0b, 0.5, 50);
+            pointLight.position.set(0, 0, 0);
+            scene.add(pointLight);
+        }
+
+        // ==========================================
+        // CONSTRUCCIÓN DEL MODELO NIVEL 1: ADN (Doble Hélice)
+        // ==========================================
+        function buildDNA_Level1() {
+            dnaGroup = new THREE.Group();
+
+            const length = 32;
+            const radius = 2.5;
+            const turns = 5;
+            const pointsCount = 400;
+
+            // Curvas de soporte para las dos cadenas antiparalelas
+            const spine1Points = [];
+            const spine2Points = [];
+
+            for (let i = 0; i <= pointsCount; i++) {
+                const t = i / pointsCount;
+                const angle = t * turns * Math.PI * 2;
+                const y = (t - 0.5) * length;
+                
+                const x1 = Math.cos(angle) * radius;
+                const z1 = Math.sin(angle) * radius;
+                
+                const x2 = Math.cos(angle + Math.PI) * radius;
+                const z2 = Math.sin(angle + Math.PI) * radius;
+
+                spine1Points.push(new THREE.Vector3(x1, y, z1));
+                spine2Points.push(new THREE.Vector3(x2, y, z2));
+            }
+
+            // Crear geometrías tubulares para las hebras externas (esqueleto Azúcar-Fosfato)
+            const tubeCurve1 = new THREE.CatmullRomCurve3(spine1Points);
+            const tubeCurve2 = new THREE.CatmullRomCurve3(spine2Points);
+
+            const tubeGeo1 = new THREE.TubeGeometry(tubeCurve1, 120, 0.22, 8, false);
+            const tubeGeo2 = new THREE.TubeGeometry(tubeCurve2, 120, 0.22, 8, false);
+
+            const matSugarPhosphate = new THREE.MeshPhongMaterial({ 
+                color: 0x2563eb, // Azul intenso
+                shininess: 90, 
+                specular: 0x3b82f6 
+            });
+
+            const strand1 = new THREE.Mesh(tubeGeo1, matSugarPhosphate);
+            const strand2 = new THREE.Mesh(tubeGeo2, matSugarPhosphate);
+            dnaGroup.add(strand1);
+            dnaGroup.add(strand2);
+
+            // Colorear las bases de forma aleatoria estructurada (A-T, C-G)
+            const rungsCount = 55;
+            const baseColors = [
+                0xef4444, // Rojo: Adenina
+                0xf59e0b, // Ámbar: Timina
+                0x10b981, // Esmeralda: Citosina
+                0x8b5cf6  // Violeta: Guanina
+            ];
+
+            const baseMaterials = baseColors.map(color => new THREE.MeshStandardMaterial({
+                color: color,
+                roughness: 0.2,
+                metalness: 0.1
+            }));
+
+            // Agregar puentes / peldaños de bases nitrogenadas
+            for (let i = 0; i < rungsCount; i++) {
+                const ratio = i / (rungsCount - 1);
+                const pointIndex = Math.floor(ratio * pointsCount);
+                if (pointIndex >= pointsCount) continue;
+
+                const p1 = spine1Points[pointIndex];
+                const p2 = spine2Points[pointIndex];
+
+                // Crear dos mitades de peldaño para representar el emparejamiento de bases
+                const midPoint = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
+
+                // Determinar el par de bases (par de materiales)
+                const baseIndex = Math.floor(Math.random() * 2) * 2; // Da 0 o 2
+                const matA = baseMaterials[baseIndex];
+                const matB = baseMaterials[baseIndex + 1];
+
+                // Mitad A (Cadena 1 a punto medio)
+                const geomHalfA = new THREE.CylinderGeometry(0.08, 0.08, p1.distanceTo(midPoint), 6);
+                geomHalfA.translate(0, p1.distanceTo(midPoint) / 2, 0);
+                const halfAMesh = new THREE.Mesh(geomHalfA, matA);
+                halfAMesh.position.copy(p1);
+                halfAMesh.lookAt(midPoint);
+                halfAMesh.rotateX(Math.PI / 2); // alinear cilindro
+
+                // Mitad B (Cadena 2 a punto medio)
+                const geomHalfB = new THREE.CylinderGeometry(0.08, 0.08, p2.distanceTo(midPoint), 6);
+                geomHalfB.translate(0, p2.distanceTo(midPoint) / 2, 0);
+                const halfBMesh = new THREE.Mesh(geomHalfB, matB);
+                halfBMesh.position.copy(p2);
+                halfBMesh.lookAt(midPoint);
+                halfBMesh.rotateX(Math.PI / 2); // alinear cilindro
+
+                // Pequeño conector central (puente de hidrógeno simbólico)
+                const hBridgeGeo = new THREE.SphereGeometry(0.12, 6, 6);
+                const hBridgeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                const hBridge = new THREE.Mesh(hBridgeGeo, hBridgeMat);
+                hBridge.position.copy(midPoint);
+
+                dnaGroup.add(halfAMesh);
+                dnaGroup.add(halfBMesh);
+                dnaGroup.add(hBridge);
+            }
+
+            scene.add(dnaGroup);
+        }
+
+        // ==========================================
+        // CONSTRUCCIÓN DEL MODELO NIVEL 2: NUCLEOSOMA (11 nm)
+        // ==========================================
+        function buildNucleosome_Level2() {
+            nucleosomeGroup = new THREE.Group();
+
+            // 1. Núcleo central del Octámero de Histonas (Cilindro con subesferas)
+            const histoneCoreGroup = new THREE.Group();
+            
+            // Subunidades del octámero (H2A, H2B, H3, H4 en pares)
+            // Posicionados en un cilindro compacto
+            const subRadius = 2.4;
+            const subHeight = 2.2;
+            const subunitGeometry = new THREE.CylinderGeometry(subRadius, subRadius, subHeight, 16);
+
+            const subMaterials = {
+                'H2A': new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.4, metalness: 0.1 }), // Rojo
+                'H2B': new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.4, metalness: 0.1 }), // Naranja
+                'H3': new THREE.MeshStandardMaterial({ color: 0x22c55e, roughness: 0.4, metalness: 0.1 }),  // Verde
+                'H4': new THREE.MeshStandardMaterial({ color: 0x06b6d4, roughness: 0.4, metalness: 0.1 })   // Cian/Azul
+            };
+
+            const subData = [
+                // Fila superior (y = 1.1)
+                { name: 'H2A', mat: subMaterials['H2A'], x: 1.6, z: 1.6, y: 1.1 },
+                { name: 'H2B', mat: subMaterials['H2B'], x: -1.6, z: 1.6, y: 1.1 },
+                { name: 'H3',  mat: subMaterials['H3'],  x: -1.6, z: -1.6, y: 1.1 },
+                { name: 'H4',  mat: subMaterials['H4'],  x: 1.6, z: -1.6, y: 1.1 },
+                // Fila inferior (y = -1.1)
+                { name: 'H4',  mat: subMaterials['H4'],  x: 1.6, z: 1.6, y: -1.1 },
+                { name: 'H3',  mat: subMaterials['H3'],  x: -1.6, z: 1.6, y: -1.1 },
+                { name: 'H2B', mat: subMaterials['H2B'], x: -1.6, z: -1.6, y: -1.1 },
+                { name: 'H2A', mat: subMaterials['H2A'], x: 1.6, z: -1.6, y: -1.1 }
+            ];
+
+            subData.forEach((data) => {
+                const sub = new THREE.Mesh(subunitGeometry, data.mat);
+                sub.position.set(data.x, data.y, data.z);
+                
+                // Añadir un identificador científico de texto flotante simulado por color
+                histoneCoreGroup.add(sub);
+                histoneCores.push(sub);
+            });
+
+            nucleosomeGroup.add(histoneCoreGroup);
+
+            // 2. Colas de histonas (Curvas flexibles que sobresalen para la epigenética)
+            const tailCurvePoints = [
+                // Cola H3 (Superior de H3)
+                [new THREE.Vector3(-1.6, 2.2, -1.6), new THREE.Vector3(-2.8, 3.5, -2.8), new THREE.Vector3(-3.5, 4.2, -4.5)],
+                // Cola H4 (Inferior de H4)
+                [new THREE.Vector3(1.6, -2.2, 1.6), new THREE.Vector3(2.8, -3.5, 2.8), new THREE.Vector3(3.5, -4.2, 4.5)],
+                // Cola H2A
+                [new THREE.Vector3(1.6, 2.2, -1.6), new THREE.Vector3(3.0, 3.0, -2.5), new THREE.Vector3(4.5, 3.2, -3.0)],
+                // Cola H2B
+                [new THREE.Vector3(-1.6, -2.2, 1.6), new THREE.Vector3(-3.0, -3.0, 2.5), new THREE.Vector3(-4.5, -3.2, 3.0)]
+            ];
+
+            tailCurvePoints.forEach((pts) => {
+                const curve = new THREE.CatmullRomCurve3(pts);
+                const geo = new THREE.TubeGeometry(curve, 16, 0.15, 8, false);
+                const mat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.5 });
+                const tail = new THREE.Mesh(geo, mat);
+                nucleosomeGroup.add(tail);
+                histoneTails.push(tail);
+            });
+
+            // 3. ADN enrollado en súper-hélice alrededor del octámero
+            // El ADN gira unas 1.67 vueltas alrededor del octámero de radio aproximado 4.2
+            const dnaHelixPoints = [];
+            const dnaRadius = 4.3;
+            const helixTurns = 1.67;
+            const helixPointsCount = 200;
+            const helixHeight = 3.6;
+
+            for (let i = 0; i <= helixPointsCount; i++) {
+                const t = i / helixPointsCount;
+                const angle = t * helixTurns * Math.PI * 2 - (Math.PI / 2);
+                const x = Math.cos(angle) * dnaRadius;
+                const y = (t - 0.5) * helixHeight;
+                const z = Math.sin(angle) * dnaRadius;
+                dnaHelixPoints.push(new THREE.Vector3(x, y, z));
+            }
+
+            // Crear el tubo para representar el ADN del nucleosoma
+            const helixCurve = new THREE.CatmullRomCurve3(dnaHelixPoints);
+            const dnaHelixGeometry = new THREE.TubeGeometry(helixCurve, 100, 0.45, 12, false);
+            const dnaHelixMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x3b82f6, 
+                roughness: 0.3,
+                metalness: 0.1
+            });
+            
+            dnaSpiralMesh = new THREE.Mesh(dnaHelixGeometry, dnaHelixMaterial);
+            nucleosomeGroup.add(dnaSpiralMesh);
+
+            // 4. Histona de enlace H1 (Mantiene fijo el ADN de entrada/salida)
+            // Posicionada cerca de los extremos del ADN
+            const h1Geometry = new THREE.SphereGeometry(1.8, 16, 16);
+            h1Geometry.scale(0.8, 1.4, 0.8); // darle forma ovoide
+            const h1Material = new THREE.MeshStandardMaterial({ 
+                color: 0xf59e0b, // Ámbar/Amarillo distintivo
+                roughness: 0.4,
+                metalness: 0.2
+            });
+            const h1Mesh = new THREE.Mesh(h1Geometry, h1Material);
+            h1Mesh.position.set(4.8, 0, -1.5);
+            h1Mesh.rotateZ(0.2);
+            nucleosomeGroup.add(h1Mesh);
+
+            // 5. ADN Conector / Enlace (Linker DNA que entra y sale hacia fuera)
+            const linkerInPoints = [
+                new THREE.Vector3(5.0, -1.8, -3.0),
+                new THREE.Vector3(6.5, -2.5, -6.0),
+                new THREE.Vector3(8.0, -3.0, -9.0)
+            ];
+            const linkerOutPoints = [
+                new THREE.Vector3(5.0, 1.8, -1.0),
+                new THREE.Vector3(7.0, 2.5, 2.0),
+                new THREE.Vector3(9.0, 3.0, 5.0)
+            ];
+
+            const linkerInCurve = new THREE.CatmullRomCurve3(linkerInPoints);
+            const linkerOutCurve = new THREE.CatmullRomCurve3(linkerOutPoints);
+
+            const linkerInMesh = new THREE.Mesh(new THREE.TubeGeometry(linkerInCurve, 10, 0.45, 12, false), dnaHelixMaterial);
+            const linkerOutMesh = new THREE.Mesh(new THREE.TubeGeometry(linkerOutCurve, 10, 0.45, 12, false), dnaHelixMaterial);
+
+            nucleosomeGroup.add(linkerInMesh);
+            nucleosomeGroup.add(linkerOutMesh);
+
+            // Guardar en la escena principal
+            scene.add(nucleosomeGroup);
+        }
+
+        // ==========================================
+        // CONSTRUCCIÓN DEL MODELO NIVEL 3: SOLENOIDE (Fibra de 30 nm)
+        // ==========================================
+        function buildSolenoid_Level3() {
+            solenoidGroup = new THREE.Group();
+
+            // Un solenoide empaqueta 6 nucleosomas por vuelta. Vamos a modelar 1.5 vueltas (9 nucleosomas)
+            // organizados en una hélice de gran radio (aprox 12 unidades) que asciende verticalmente.
+            const totalNucleosomes = 8;
+            const solenoidRadius = 14;
+            const stepHeight = 5.0; // Desplazamiento vertical entre nucleosomas
+
+            const dnaPathPoints = [];
+
+            for (let i = 0; i < totalNucleosomes; i++) {
+                // Ángulo para distribuir en hélice
+                const angle = (i / 6) * Math.PI * 2;
+                const x = Math.cos(angle) * solenoidRadius;
+                const z = Math.sin(angle) * solenoidRadius;
+                const y = (i - (totalNucleosomes/2)) * stepHeight;
+
+                // Crear un nucleosoma a escala ligeramente menor para que quepan bien
+                const miniNucleosome = new THREE.Group();
+                miniNucleosome.position.set(x, y, z);
+                
+                // Rotar el nucleosoma para que quede tangente al círculo del solenoide
+                miniNucleosome.lookAt(new THREE.Vector3(0, y, 0));
+                miniNucleosome.rotateY(Math.PI / 2);
+
+                // Añadir núcleo (simplificado para rendimiento, cilindro combinado)
+                const coreGeo = new THREE.CylinderGeometry(2.2, 2.2, 2.0, 10);
+                const coreMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.6 }); // Color neutro pizarra
+                const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+                miniNucleosome.add(coreMesh);
+
+                // Añadir ADN enrollado simplificado
+                const ringGeo = new THREE.TorusGeometry(2.7, 0.35, 8, 24);
+                ringGeo.rotateX(Math.PI/2);
+                const ringMat = new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.3 }); // ADN azul
+                const ring1 = new THREE.Mesh(ringGeo, ringMat);
+                ring1.position.y = 0.5;
+                const ring2 = new THREE.Mesh(ringGeo, ringMat);
+                ring2.position.y = -0.5;
+                miniNucleosome.add(ring1);
+                miniNucleosome.add(ring2);
+
+                // Histona H1 en amarillo
+                const h1Geo = new THREE.SphereGeometry(0.8, 8, 8);
+                const h1Mat = new THREE.MeshStandardMaterial({ color: 0xf59e0b });
+                const h1Mesh = new THREE.Mesh(h1Geo, h1Mat);
+                h1Mesh.position.set(3.2, 0, 0);
+                miniNucleosome.add(h1Mesh);
+
+                // Guardar la posición para dIbuixar el ADN de enlace inter-nucleosómico
+                dnaPathPoints.push(new THREE.Vector3(x, y, z));
+
+                solenoidGroup.add(miniNucleosome);
+            }
+
+            // Unir los nucleosomas con un cordón continuo de ADN conector
+            const solenoidDnaCurve = new THREE.CatmullRomCurve3(dnaPathPoints);
+            const solenoidDnaGeo = new THREE.TubeGeometry(solenoidDnaCurve, 100, 0.3, 8, false);
+            const solenoidDnaMat = new THREE.MeshStandardMaterial({ 
+                color: 0x3b82f6, 
+                transparent: true, 
+                opacity: 0.7 
+            });
+            const solenoidDnaMesh = new THREE.Mesh(solenoidDnaGeo, solenoidDnaMat);
+            solenoidGroup.add(solenoidDnaMesh);
+
+            scene.add(solenoidGroup);
+        }
+
+        // ==========================================
+        // SISTEMA DE CONTROL DE ESTILO DE VIDA (EPIGENÉTICA)
+        // ==========================================
+        function applyLifestyle(scenarioKey) {
+            const data = lifestyleData[scenarioKey];
+            if (!data) return;
+
+            // Asegurarse de que el usuario vea el Nucleosoma (Nivel 2) para apreciar los marcadores epigenéticos
+            changeLevel(2);
+
+            // Activar modificaciones de forma síncrona con el escenario
+            applyAcetylation(data.acetyl);
+            applyMethylation(data.methyl);
+
+            // Actualizar la interfaz del monitor de expresión génica
+            document.getElementById('gene-name').innerText = data.geneName;
+            document.getElementById('gene-function').innerText = data.geneFunction;
+            document.getElementById('gene-consequences').innerText = data.consequences;
+            
+            const badge = document.getElementById('gene-rate-badge');
+            badge.innerText = data.rate;
+            badge.className = `text-xs font-bold px-1.5 py-0.5 rounded ${data.rateClass}`;
+
+            const progressBar = document.getElementById('gene-progress-bar');
+            progressBar.className = `${data.progressBarColor} h-full transition-all duration-700`;
+            progressBar.style.width = data.progressWidth;
+
+            // Cambiar estilos de los botones de estilo de vida para feedback visual
+            document.getElementById('btn-env-stress').className = scenarioKey === 'stress' 
+                ? "w-full text-left p-2.5 rounded-lg border border-red-500 bg-red-950/30 transition-all flex items-center justify-between"
+                : "w-full text-left p-2.5 rounded-lg border border-slate-800 bg-slate-900/40 hover:bg-slate-900/60 transition-all flex items-center justify-between";
+
+            document.getElementById('btn-env-veg').className = scenarioKey === 'vegetables' 
+                ? "w-full text-left p-2.5 rounded-lg border border-emerald-500 bg-emerald-950/30 transition-all flex items-center justify-between"
+                : "w-full text-left p-2.5 rounded-lg border border-slate-800 bg-slate-900/40 hover:bg-slate-900/60 transition-all flex items-center justify-between";
+
+            document.getElementById('btn-env-junk').className = scenarioKey === 'junkfood' 
+                ? "w-full text-left p-2.5 rounded-lg border border-amber-500 bg-amber-950/30 transition-all flex items-center justify-between"
+                : "w-full text-left p-2.5 rounded-lg border border-slate-800 bg-slate-900/40 hover:bg-slate-900/60 transition-all flex items-center justify-between";
+        }
+
+        // ==========================================
+        // SISTEMA INTERACTIVO EPIGENÉTICO (Grupos Químicos)
+        // ==========================================
+
+        // Añadir/Remover visualmente grupos Acetilo
+        function applyAcetylation(enable) {
+            isAcetylated = enable;
+            
+            // Eliminar anteriores si existen
+            if (nucleosomeGroup) {
+                acetylMarkers.forEach(m => nucleosomeGroup.remove(m));
+            }
+            acetylMarkers = [];
+
+            const statusText = document.getElementById('status-acetyl');
+
+            if (enable) {
+                if (statusText) {
+                    statusText.innerText = "Acetilación: Activa (Cromatina Abierta)";
+                    statusText.className = "font-bold text-emerald-400 bg-emerald-950/40 px-1 py-0.5 rounded";
+                }
+
+                // Crear esferas de grupos acetilo (CH3CO-) de color rosa brillante
+                // Se posicionan cerca de las colas de las histonas
+                const acetylGeo = new THREE.SphereGeometry(0.4, 12, 12);
+                const acetylMat = new THREE.MeshPhongMaterial({ 
+                    color: 0xec4899, // Rosa intenso
+                    emissive: 0xdb2777,
+                    emissiveIntensity: 0.6,
+                    shininess: 100
+                });
+
+                // Colocar de forma distribuida en las colas de las histonas (que están en el Nivel 2)
+                const positions = [
+                    new THREE.Vector3(-3.2, 3.8, -3.8),
+                    new THREE.Vector3(-3.6, 4.4, -4.8),
+                    new THREE.Vector3(3.1, -3.8, 3.1),
+                    new THREE.Vector3(3.8, -4.4, 4.8),
+                    new THREE.Vector3(3.8, 3.1, -2.8),
+                    new THREE.Vector3(-3.8, -3.1, 2.8)
+                ];
+
+                positions.forEach((pos) => {
+                    const acetyl = new THREE.Mesh(acetylGeo, acetylMat);
+                    acetyl.position.copy(pos);
+                    
+                    // Añadir una pequeña línea conectora (enlace covalente)
+                    const lineGeo = new THREE.CylinderGeometry(0.04, 0.04, 1.0, 6);
+                    lineGeo.translate(0, -0.5, 0);
+                    const lineMat = new THREE.MeshBasicMaterial({ color: 0xec4899 });
+                    const line = new THREE.Mesh(lineGeo, lineMat);
+                    line.position.copy(pos);
+                    line.lookAt(0,0,0);
+                    
+                    const group = new THREE.Group();
+                    group.add(acetyl);
+                    group.add(line);
+                    
+                    if (nucleosomeGroup) {
+                        nucleosomeGroup.add(group);
+                    }
+                    acetylMarkers.push(group);
+                });
+
+                // Animar la descompactación (apertura) relajando el ADN
+                // simulando biológicamente la pérdida de afinidad electrostática
+                animateRelaxation(true);
+            } else {
+                if (statusText) {
+                    statusText.innerText = "Acetilación: Inactiva";
+                    statusText.className = "font-bold text-pink-400";
+                }
+                animateRelaxation(false);
+            }
+        }
+
+        // Añadir/Remover visualmente grupos Metilo
+        function applyMethylation(enable) {
+            isMethylated = enable;
+
+            // Eliminar anteriores si existen
+            if (nucleosomeGroup) {
+                methylMarkers.forEach(m => nucleosomeGroup.remove(m));
+            }
+            methylMarkers = [];
+
+            const statusText = document.getElementById('status-methyl');
+
+            if (enable) {
+                if (statusText) {
+                    statusText.innerText = "Metilación: Activa (Compactado)";
+                    statusText.className = "font-bold text-red-400 bg-red-950/40 px-1 py-0.5 rounded";
+                }
+
+                // Crear esferas de grupos metilo (-CH3) de color cian brillante
+                const methylGeo = new THREE.SphereGeometry(0.35, 12, 12);
+                const methylMat = new THREE.MeshPhongMaterial({ 
+                    color: 0x22d3ee, // Cian de alto contraste
+                    emissive: 0x0891b2,
+                    emissiveIntensity: 0.5,
+                    shininess: 100
+                });
+
+                // Colocar en posiciones estratégicas del ADN (metilación de islas CpG)
+                // Se ubican directamente sobre la doble hélice de ADN en el nucleosoma
+                const positions = [
+                    new THREE.Vector3(0, 4.5, 0),
+                    new THREE.Vector3(-4.5, 0.5, 0.5),
+                    new THREE.Vector3(4.5, -0.5, -0.5),
+                    new THREE.Vector3(0, -4.5, 1.0),
+                    new THREE.Vector3(-3.0, 3.2, 1.5),
+                    new THREE.Vector3(3.0, -3.2, -1.5)
+                ];
+
+                positions.forEach((pos) => {
+                    const methyl = new THREE.Mesh(methylGeo, methylMat);
+                    methyl.position.copy(pos);
+
+                    // Pequeño enlace químico
+                    const lineGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.6, 6);
+                    lineGeo.translate(0, -0.3, 0);
+                    const lineMat = new THREE.MeshBasicMaterial({ color: 0x22d3ee });
+                    const line = new THREE.Mesh(lineGeo, lineMat);
+                    line.position.copy(pos);
+                    line.lookAt(0,0,0);
+
+                    const group = new THREE.Group();
+                    group.add(methyl);
+                    group.add(line);
+
+                    if (nucleosomeGroup) {
+                        nucleosomeGroup.add(group);
+                    }
+                    methylMarkers.push(group);
+                });
+
+                // La metilación promueve compactación / cierre (recluta HDACs y condensinas)
+                animateCompaction(true);
+            } else {
+                if (statusText) {
+                    statusText.innerText = "Metilación: Inactiva";
+                    statusText.className = "font-bold text-cyan-400";
+                }
+                animateCompaction(false);
+            }
+        }
+
+        // Animación de la soltura física del ADN (Relajación / Eucromatina activa)
+        function animateRelaxation(relax) {
+            const targetFactor = relax ? 1.0 : 0.0;
+            
+            // Usamos un intervalo de interpolación para abrir la espiral de ADN gradualmente
+            const interval = setInterval(() => {
+                if (Math.abs(acetylationFactor - targetFactor) < 0.05) {
+                    acetylationFactor = targetFactor;
+                    clearInterval(interval);
+                } else {
+                    acetylationFactor += (targetFactor - acetylationFactor) * 0.15;
+                }
+
+                // Aplicar el factor de soltura/diámetro en el ADN del nucleosoma
+                if (dnaSpiralMesh) {
+                    // El ADN se expande y se aleja levemente del octámero simulando la repulsión electrostática
+                    const scale = 1.0 + (acetylationFactor * 0.12);
+                    dnaSpiralMesh.scale.set(scale, 1.0, scale);
+                }
+
+                // Las colas de las histonas se estiran o flexibilizan más hacia fuera
+                histoneTails.forEach((tail) => {
+                    const baseScale = 1.0 + (acetylationFactor * 0.25);
+                    tail.scale.set(baseScale, baseScale, baseScale);
+                });
+
+                updateCompactionStatusLabel();
+            }, 30);
+        }
+
+        // Animación de la contracción física (Heterocromatina inactiva)
+        function animateCompaction(compact) {
+            const targetFactor = compact ? 1.0 : 0.0;
+
+            const interval = setInterval(() => {
+                if (Math.abs(methylationFactor - targetFactor) < 0.05) {
+                    methylationFactor = targetFactor;
+                    clearInterval(interval);
+                } else {
+                    methylationFactor += (targetFactor - methylationFactor) * 0.15;
+                }
+
+                // El ADN se aprieta más contra el octámero
+                if (dnaSpiralMesh && !isAcetylated) {
+                    const scale = 1.0 - (methylationFactor * 0.06);
+                    dnaSpiralMesh.scale.set(scale, 1.0, scale);
+                }
+
+                // Las histonas se agrupan de forma hiper-compacta
+                histoneCores.forEach((core) => {
+                    const scale = 1.0 - (methylationFactor * 0.04);
+                    core.scale.set(scale, scale, scale);
+                });
+
+                updateCompactionStatusLabel();
+            }, 30);
+        }
+
+        // Actualizar etiqueta del HUD según estados cruzados
+        function updateCompactionStatusLabel() {
+            const label = document.getElementById('status-compaction');
+            if (!label) return;
+            
+            if (isAcetylated && !isMethylated) {
+                label.innerText = "Cromatina: Abierta (EUCROMATINA TRANSCRIPCIONALMENTE ACTIVA)";
+                label.className = "font-bold text-green-400";
+            } else if (!isAcetylated && isMethylated) {
+                label.innerText = "Cromatina: Cerrada (HETEROCROMATINA SILENCIADA)";
+                label.className = "font-bold text-red-500";
+            } else if (isAcetylated && isMethylated) {
+                label.innerText = "Cromatina: Estado Mixto / Dinámico Competitivo";
+                label.className = "font-bold text-yellow-400";
+            } else {
+                label.innerText = "Cromatina: Basal / Fisiológica";
+                label.className = "font-bold text-emerald-400";
+            }
+        }
+
+
+        // ==========================================
+        // GESTIÓN DE NIVELES Y TRANSICIONES DE ESCENA
+        // ==========================================
+        function changeLevel(level) {
+            currentLevel = level;
+
+            // Ocultar todos los niveles de forma segura
+            if (dnaGroup) dnaGroup.visible = false;
+            if (nucleosomeGroup) nucleosomeGroup.visible = false;
+            if (solenoidGroup) solenoidGroup.visible = false;
+
+            // Apagar luces puntuales secundarias antes de reajustar
+            if (camera) camera.lookAt(0, 0, 0);
+
+            // Activar y configurar cámara para el nivel seleccionado
+            switch (level) {
+                case 1:
+                    activeGroup = dnaGroup;
+                    if (dnaGroup) dnaGroup.visible = true;
+                    // Acercar la cámara a la doble hélice
+                    if (camera) camera.position.set(0, 0, 15);
+                    break;
+                case 2:
+                    activeGroup = nucleosomeGroup;
+                    if (nucleosomeGroup) nucleosomeGroup.visible = true;
+                    // Posición cómoda para ver el nucleosoma y sus colas
+                    if (camera) camera.position.set(0, 8, 18);
+                    break;
+                case 3:
+                    activeGroup = solenoidGroup;
+                    if (solenoidGroup) solenoidGroup.visible = true;
+                    // Alejar para contemplar la hélice completa de 30nm
+                    if (camera) camera.position.set(0, 10, 42);
+                    break;
+            }
+
+            // Actualizar botones de la barra lateral de control
+            document.querySelectorAll('.btn-level').forEach((btn, idx) => {
+                const btnLvl = idx + 1;
+                const spanNode = btn.querySelector('span');
+                if (btnLvl === level) {
+                    btn.className = "btn-level w-full text-left p-3 rounded-lg border transition-all flex items-center justify-between bg-sky-950/40 border-sky-500/50 text-white";
+                    if (spanNode) spanNode.className = "w-7 h-7 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold text-xs";
+                } else {
+                    btn.className = "btn-level w-full text-left p-3 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-900/50 hover:bg-slate-900 transition-all flex items-center justify-between text-slate-300";
+                    if (spanNode) spanNode.className = "w-7 h-7 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center font-bold text-xs";
+                }
+            });
+
+            // Actualizar HUD de textos informativos
+            const titleEl = document.getElementById('info-title');
+            const scaleEl = document.getElementById('info-scale');
+            const descEl = document.getElementById('info-desc');
+            const viewTagEl = document.getElementById('current-view-tag');
+
+            if (titleEl) titleEl.innerText = levelData[level].title;
+            if (scaleEl) scaleEl.innerText = levelData[level].scale;
+            if (descEl) descEl.innerText = levelData[level].desc;
+            if (viewTagEl) viewTagEl.innerText = levelData[level].viewTag;
+
+            // Reiniciar controles para suavizar la vista
+            if (controls) {
+                controls.target.set(0, 0, 0);
+                controls.update();
+            }
+        }
+
+        function onWindowResize() {
+            if (!camera || !renderer) return;
+            const container = document.getElementById('canvas-container');
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        // ==========================================
+        // BUCLE DE ANIMACIÓN CONTINUO
+        // ==========================================
+        let clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const elapsedTime = clock.getElapsedTime();
+
+            // Rotación suave automática de los niveles interactivos activos para apreciación tridimensional
+            if (activeGroup) {
+                // Rotación sutil y elegante alrededor del eje Y
+                activeGroup.rotation.y = elapsedTime * 0.15;
+                
+                // Pequeña oscilación agradable en X para dar dinamismo orgánico natural
+                activeGroup.rotation.x = Math.sin(elapsedTime * 0.3) * 0.05;
+            }
+
+            // Animación interna de la doble hélice de ADN si está activa
+            if (currentLevel === 1 && dnaGroup) {
+                // Efecto de flujo sutil subiendo por la hélice
+                dnaGroup.position.y = Math.sin(elapsedTime * 0.5) * 0.2;
+            }
+
+            // Animación de los marcadores químicos flotantes (fluctuación biológica)
+            if (currentLevel === 2) {
+                // Los grupos acetilo y metilo oscilan ligeramente para parecer suspendidos en agua celular
+                acetylMarkers.forEach((marker, index) => {
+                    const offset = index * 1.5;
+                    marker.position.y += Math.sin(elapsedTime * 2.0 + offset) * 0.005;
+                });
+                methylMarkers.forEach((marker, index) => {
+                    const offset = index * 1.5;
+                    marker.position.y += Math.cos(elapsedTime * 2.0 + offset) * 0.005;
+                });
+            }
+
+            if (controls) controls.update();
+            if (renderer && scene && camera) renderer.render(scene, camera);
+        }
+
+        // Lanzar cuando el DOM esté listo
+        window.onload = () => {
+            init();
+            // Iniciar por defecto con el escenario de los vegetales / salud para mostrar actividad epigenética balanceada
+            applyLifestyle('vegetables');
+        };
+    </script>
+</body>
+</html>

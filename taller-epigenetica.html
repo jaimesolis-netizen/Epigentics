@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Canvas Interactivo - Taller Epigenética</title>
+  <!-- Tailwind CSS CDN para un diseño moderno y fluido -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Estilos personalizados para animaciones fluidas y efectos 3D de tarjetas */
+    .perspective-1000 {
+      perspective: 1000px;
+    }
+    .transform-style-3d {
+      transform-style: preserve-3d;
+    }
+    .backface-hidden {
+      backface-visibility: hidden;
+    }
+    .rotate-y-180 {
+      transform: rotateY(180deg);
+    }
+    /* Animación de rotación para la ruleta */
+    @keyframes spin-roulette {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(1080deg); }
+    }
+    .spinning {
+      animation: spin-roulette 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+  <!-- ENCABEZADO PRINCIPAL -->
+  <header class="bg-indigo-900 text-white p-4 shadow-md sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <!-- Icono de ADN (SVG) -->
+        <svg class="w-8 h-8 text-emerald-400 animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M4.5 10.5C4.5 7.46243 6.96243 5 10 5C13.0376 5 15.5 7.46243 15.5 10.5C15.5 13.5376 13.0376 16 10 16C6.96243 16 4.5 13.5376 4.5 10.5Z" stroke-dasharray="2 2"/>
+          <path d="M19.5 13.5C19.5 16.5376 17.0376 19 14 19C10.9624 19 8.5 16.5376 8.5 13.5C8.5 10.4624 10.9624 8 14 8C17.0376 8 19.5 10.4624 19.5 13.5Z"/>
+          <path d="M9 12L15 10M8 15L16 12M10 9L14 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <div>
+          <h1 class="text-xl font-bold leading-tight">Taller de Formación Docente</h1>
+          <p class="text-indigo-200 text-xs">Epigenética en Ciencias para la Ciudadanía (SPECTO - PUCV)</p>
+        </div>
+      </div>
+      
+      <!-- Navegación de Módulos -->
+      <nav class="flex gap-1 overflow-x-auto pb-1 md:pb-0 w-full md:w-auto">
+        <button onclick="switchTab(0)" id="nav-btn-0" class="px-3 py-2 rounded-lg text-xs md:text-sm font-medium bg-indigo-700 text-white shadow-inner transition whitespace-nowrap">Inicio</button>
+        <button onclick="switchTab(1)" id="nav-btn-1" class="px-3 py-2 rounded-lg text-xs md:text-sm font-medium text-indigo-100 hover:bg-indigo-800 transition whitespace-nowrap">Mód. 1: Conceptos</button>
+        <button onclick="switchTab(2)" id="nav-btn-2" class="px-3 py-2 rounded-lg text-xs md:text-sm font-medium text-indigo-100 hover:bg-indigo-800 transition whitespace-nowrap">Mód. 2: Gemelas</button>
+        <button onclick="switchTab(3)" id="nav-btn-3" class="px-3 py-2 rounded-lg text-xs md:text-sm font-medium text-indigo-100 hover:bg-indigo-800 transition whitespace-nowrap">Mód. 3: Simulador</button>
+        <button onclick="switchTab(4)" id="nav-btn-4" class="px-3 py-2 rounded-lg text-xs md:text-sm font-medium text-indigo-100 hover:bg-indigo-800 transition whitespace-nowrap">Mód. 4: Didáctica</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- CONTENEDOR DE CONTENIDOS -->
+  <main class="flex-grow max-w-6xl mx-auto w-full p-4 md:p-6 lg:p-8">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden min-h-[70vh]">
+      
+      <!-- ================= PANTALLA DE INICIO ================= -->
+      <section id="view-0" class="p-6 md:p-12 text-center flex flex-col items-center justify-center min-h-[60vh]">
+        <div class="bg-indigo-50 p-6 rounded-full mb-6">
+          <svg class="w-20 h-20 text-indigo-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+          </svg>
+        </div>
+        <h2 class="text-3xl md:text-5xl font-extrabold text-slate-800 mb-4 tracking-tight">Epigenética en la Ciudadanía</h2>
+        <p class="text-lg md:text-xl text-slate-600 max-w-3xl mb-8">
+          Un entorno interactivo para docentes de ciencias. Diseñado para cuestionar el determinismo genético e incorporar metodologías activas y modelos inmersivos en el aula.
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-3xl mb-8 text-left">
+          <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100">
+            <span class="text-xs font-bold text-indigo-600 uppercase tracking-wide">Foco Curricular</span>
+            <p class="font-semibold text-slate-800 mt-1">Ciencias para la Ciudadanía</p>
+            <p class="text-xs text-slate-500 mt-0.5">Módulo Bienestar y Salud</p>
+          </div>
+          <div class="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
+            <span class="text-xs font-bold text-emerald-700 uppercase tracking-wide">Pedagogía</span>
+            <p class="font-semibold text-slate-800 mt-1">Investigación Basada en Modelos</p>
+            <p class="text-xs text-slate-500 mt-0.5">SPECTO (Fondecyt 1211092)</p>
+          </div>
+          <div class="bg-amber-50/50 p-4 rounded-xl border border-amber-100">
+            <span class="text-xs font-bold text-amber-700 uppercase tracking-wide">Modalidad</span>
+            <p class="font-semibold text-slate-800 mt-1">Taller Activo - 8 Horas</p>
+            <p class="text-xs text-slate-500 mt-0.5">Actividades de co-diseño</p>
+          </div>
+        </div>
+
+        <button onclick="switchTab(1)" class="px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full font-bold text-lg shadow-lg hover:shadow-xl hover:scale-105 transition duration-300 flex items-center gap-2">
+          Comenzar Taller
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+        </button>
+      </section>
+
+      <!-- ================= MÓDULO 1: CONCEPTOS ================= -->
+      <section id="view-1" class="p-6 md:p-8 hidden">
+        <div class="border-b pb-4 mb-6 flex items-center gap-3">
+          <div class="bg-indigo-100 text-indigo-700 p-2 rounded-lg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          </div>
+          <div>
+            <h2 class="text-2xl font-bold text-slate-800">Módulo 1: Marco Teórico</h2>
+            <p class="text-sm text-slate-500">Comprendiendo los interruptores moleculares del genoma.</p>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-12 gap-8">
+          <!-- Ticket de entrada interactivo -->
+          <div class="md:col-span-5 bg-blue-50/80 p-6 rounded-2xl border border-blue-100 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-2 text-blue-800 font-bold mb-3">
+                <span class="bg-blue-200 text-blue-800 px-2.5 py-0.5 rounded text-xs">Fase Inicial</span>
+                <h3>Ticket de Entrada</h3>
+              </div>
+              <p class="text-slate-700 text-sm mb-4">
+                ¿Qué frase define mejor tu visión actual de la relación entre genes, ambiente y salud humana?
+              </p>
+              
+              <div id="ticket-options" class="space-y-2.5">
+                <button onclick="submitTicket(1)" class="w-full text-left p-3 rounded-xl border border-slate-200 bg-white hover:bg-blue-100 transition text-sm">
+                  <strong>A. Determinista:</strong> Los genes son el plano definitivo; si portas un gen de riesgo, enfermarás de forma inevitable.
+                </button>
+                <button onclick="submitTicket(2)" class="w-full text-left p-3 rounded-xl border border-slate-200 bg-white hover:bg-blue-100 transition text-sm">
+                  <strong>B. Epigenética:</strong> Los genes son el abecedario de la vida, pero el ambiente decide qué palabras se escriben y se leen.
+                </button>
+                <button onclick="submitTicket(3)" class="w-full text-left p-3 rounded-xl border border-slate-200 bg-white hover:bg-blue-100 transition text-sm">
+                  <strong>C. Ambientalista:</strong> Los genes son secundarios; el 100% de la salud depende puramente de las decisiones conscientes.
+                </button>
+              </div>
+
+              <div id="ticket-feedback" class="hidden mt-4 p-4 bg-white rounded-xl border border-blue-200 text-sm text-slate-700">
+                <!-- Se llena dinámicamente -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Teoría de Epigenética -->
+          <div class="md:col-span-7 space-y-6">
+            <div>
+              <h3 class="text-lg font-bold text-slate-800 mb-2">¿Qué es el epigenoma?</h3>
+              <p class="text-slate-600 text-sm leading-relaxed mb-4">
+                La epigenética describe los cambios moleculares estables y heredables que alteran la expresión génica sin cambiar la secuencia de nucleótidos del ADN. Se trata de cómo las células leen los genes en respuesta a señales metabólicas, nutricionales y de estilo de vida.
+              </p>
+              <div class="bg-slate-50 p-4 rounded-xl border-l-4 border-indigo-600 text-xs text-slate-600 italic">
+                "Si la secuencia de ADN es un libreto de teatro, la epigenética es la dirección escénica: determina qué diálogos se gritan, cuáles se susurran y cuáles se omiten por completo."
+              </div>
+            </div>
+
+            <!-- Mecanismos clave -->
+            <div>
+              <h4 class="font-bold text-slate-800 text-sm mb-3">Los dos mecanismos químicos esenciales:</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="p-3 bg-red-50 rounded-xl border border-red-100">
+                  <div class="flex items-center gap-1.5 mb-1">
+                    <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                    <strong class="text-xs text-red-900">Metilación del ADN</strong>
+                  </div>
+                  <p class="text-xs text-slate-600">Grupos metilo (–CH₃) se acoplan a la citosina en las regiones promotoras del gen (islas CpG). Esto compacta el ADN impidiendo que la ARN polimerasa lo transcriba, silenciando el gen.</p>
+                </div>
+                <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+                  <div class="flex items-center gap-1.5 mb-1">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    <strong class="text-xs text-emerald-900">Acetilación de Histonas</strong>
+                  </div>
+                  <p class="text-xs text-slate-600">Grupos acetilo (–COCH₃) se unen a las proteínas histonas, neutralizando su carga positiva. Esto afloja el enrollamiento del ADN, dejándolo accesible para encender el gen.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actividad Extra: Mito o Realidad -->
+        <div class="mt-8 pt-8 border-t border-slate-100">
+          <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.008V15H12v1.5z" /></svg>
+            Actividad de Activación: Tarjetas "Mito o Realidad"
+          </h3>
+          <p class="text-sm text-slate-600 mb-4">Haz clic sobre las tarjetas para voltearlas y debatir con tus colegas sobre estas afirmaciones comunes.</p>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Tarjeta 1 -->
+            <div class="perspective-1000 h-48 cursor-pointer" onclick="toggleCard(this)">
+              <div class="transform-style-3d transition-transform duration-500 relative w-full h-full">
+                <!-- Frente -->
+                <div class="absolute inset-0 bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between backface-hidden shadow-sm">
+                  <p class="text-slate-800 font-medium text-sm">"Si heredo genes para una enfermedad como la diabetes, estoy irremediablemente condicionado a padecerla."</p>
+                  <span class="text-indigo-600 text-xs font-bold self-end">Hacer clic para voltear</span>
+                </div>
+                <!-- Reverso -->
+                <div class="absolute inset-0 bg-red-50 border border-red-200 rounded-xl p-5 flex flex-col justify-between backface-hidden rotate-y-180 shadow-inner">
+                  <div>
+                    <span class="text-red-700 font-bold text-xs uppercase tracking-wide">FALSO (MITO)</span>
+                    <p class="text-slate-700 text-xs mt-2">Los genes aportan una susceptibilidad, pero las modificaciones epigenéticas asociadas a la nutrición y el ejercicio modulan si esos genes se expresan o se apagan.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tarjeta 2 -->
+            <div class="perspective-1000 h-48 cursor-pointer" onclick="toggleCard(this)">
+              <div class="transform-style-3d transition-transform duration-500 relative w-full h-full">
+                <!-- Frente -->
+                <div class="absolute inset-0 bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between backface-hidden shadow-sm">
+                  <p class="text-slate-800 font-medium text-sm">"Eventos traumáticos u hambrunas sufridas por los abuelos pueden dejar marcas moleculares heredables en sus nietos."</p>
+                  <span class="text-indigo-600 text-xs font-bold self-end">Hacer clic para voltear</span>
+                </div>
+                <!-- Reverso -->
+                <div class="absolute inset-0 bg-emerald-50 border border-emerald-200 rounded-xl p-5 flex flex-col justify-between backface-hidden rotate-y-180 shadow-inner">
+                  <div>
+                    <span class="text-emerald-700 font-bold text-xs uppercase tracking-wide">VERDADERO (REALIDAD)</span>
+                    <p class="text-slate-700 text-xs mt-2">Estudios como el de la hambruna holandesa demuestran que el estrés nutricional grave deja firmas de metilación que persisten a lo largo de varias generaciones.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tarjeta 3 -->
+            <div class="perspective-1000 h-48 cursor-pointer" onclick="toggleCard(this)">
+              <div class="transform-style-3d transition-transform duration-500 relative w-full h-full">
+                <!-- Frente -->
+                <div class="absolute inset-0 bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between backface-hidden shadow-sm">
+                  <p class="text-slate-800 font-medium text-sm">"Ciertas moléculas de alimentos corrientes como el té verde o el brócoli actúan directamente sobre las enzimas de la cromatina."</p>
+                  <span class="text-indigo-600 text-xs font-bold self-end">Hacer clic para voltear</span>
+                </div>
+                <!-- Reverso -->
+                <div class="absolute inset-0 bg-emerald-50 border border-emerald-200 rounded-xl p-5 flex flex-col justify-between backface-hidden rotate-y-180 shadow-inner">
+                  <div>
+                    <span class="text-emerald-700 font-bold text-xs uppercase tracking-wide">VERDADERO (REALIDAD)</span>
+                    <p class="text-slate-700 text-xs mt-2">Nutrientes como el sulforafano del brócoli inhiben las desacetilasas de histonas, promoviendo una cromatina relajada que mantiene activos los genes supresores de cáncer.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= MÓDULO 2: GEMELAS ================= -->
+      <section id="view-2" class="p-6 md:p-8 hidden">
+        <div class="border-b pb-4 mb-6 flex items-center gap-3">
+          <div class="bg-emerald-100 text-emerald-700 p-2 rounded-lg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
+          </div>
+          <div>
+            <h2 class="text-2xl font-bold text-slate-800">Módulo 2: Determinismo Biológico vs Epigenética</h2>
+            <p class="text-sm text-slate-500">¿Genes o ambiente? El caso de las gemelas monocigóticas.</p>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-12 gap-8 items-stretch">
+          
+          <!-- Visualización de las Gemelas -->
+          <div class="md:col-span-5 bg-slate-900 text-white rounded-2xl p-6 flex flex-col justify-between relative overflow-hidden min-h-[350px]">
+            <div class="relative z-10 text-center">
+              <h3 class="font-bold text-lg text-emerald-400">Magda y Carolina (50 años)</h3>
+              <p class="text-xs text-slate-400 mt-1">Nacieron con el 100% del mismo código de ADN</p>
+            </div>
+
+            <div class="flex justify-around items-center relative z-10 my-6">
+              <!-- Magda -->
+              <div class="text-center flex flex-col items-center">
+                <div class="w-20 h-20 bg-red-500/20 border-4 border-red-500 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(239,68,68,0.4)] transition duration-500">
+                  <!-- Avatar simple -->
+                  <svg class="w-10 h-10 text-red-200" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+                </div>
+                <span class="font-bold mt-2 block">Magda</span>
+                <span class="text-xs text-red-300">Padece Diabetes Tipo II y Obesidad</span>
+              </div>
+
+              <!-- Carolina -->
+              <div class="text-center flex flex-col items-center">
+                <div class="w-20 h-20 bg-emerald-500/20 border-4 border-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)] transition duration-500">
+                  <svg class="w-10 h-10 text-emerald-200" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+                </div>
+                <span class="font-bold mt-2 block">Carolina</span>
+                <span class="text-xs text-emerald-300">Sana y Activa</span>
+              </div>
+            </div>
+
+            <!-- Red de ADN de fondo -->
+            <div class="absolute inset-0 opacity-10 flex items-center justify-center">
+              <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <path d="M 0,50 Q 25,20 50,50 T 100,50" fill="none" stroke="white" stroke-width="2"/>
+                <path d="M 0,50 Q 25,80 50,50 T 100,50" fill="none" stroke="white" stroke-width="2"/>
+              </svg>
+            </div>
+
+            <p class="text-center text-xs text-slate-500 relative z-10 italic">A pesar de tener genomas idénticos, sus epigenomas divergieron radicalmente.</p>
+          </div>
+
+          <!-- Panel de Factores Ambientales -->
+          <div class="md:col-span-7 bg-slate-50 p-6 rounded-2xl border border-slate-200 flex flex-col justify-between">
+            <div>
+              <h3 class="font-bold text-slate-800 text-lg mb-3">Analizar los desencadenantes ambientales</h3>
+              <p class="text-sm text-slate-600 mb-4">
+                Haz clic en las distintas variables para conocer el mecanismo químico exacto que desencadenó o previno la enfermedad en cada gemela:
+              </p>
+
+              <div class="flex flex-wrap gap-2 mb-6">
+                <button onclick="revealFactor('dieta')" class="px-4 py-2 bg-white border border-slate-300 rounded-full text-xs sm:text-sm font-semibold hover:border-red-400 hover:bg-red-50 transition shadow-sm">
+                  🍔 Dieta Alimentaria (Grasas vs Saludable)
+                </button>
+                <button onclick="revealFactor('toxicos')" class="px-4 py-2 bg-white border border-slate-300 rounded-full text-xs sm:text-sm font-semibold hover:border-amber-400 hover:bg-amber-50 transition shadow-sm">
+                  🏭 Exposición a Bisfenol-A (BPA)
+                </button>
+                <button onclick="revealFactor('ejercicio')" class="px-4 py-2 bg-white border border-slate-300 rounded-full text-xs sm:text-sm font-semibold hover:border-emerald-400 hover:bg-emerald-50 transition shadow-sm">
+                  🏃‍♀️ Actividad Física Regular
+                </button>
+              </div>
+
+              <!-- Ventana de Información -->
+              <div id="factor-display" class="bg-white p-5 rounded-xl border border-slate-200 min-h-[140px] flex items-center justify-center text-center">
+                <p class="text-slate-400 text-sm">Selecciona uno de los factores arriba para desplegar el análisis científico de su impacto.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Epigenética de Enfermedades -->
+        <div class="mt-8 pt-8 border-t border-slate-100">
+          <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            Epigenética de Enfermedades en CpC
+          </h3>
+          <div class="grid md:grid-cols-2 gap-4 text-sm text-slate-600">
+            <div class="bg-white p-5 border border-slate-200 rounded-xl">
+              <h4 class="font-bold text-slate-800 mb-2">El Gen p53 y el Cáncer</h4>
+              <p>El gen <strong>p53</strong> produce una proteína crucial que repara el ADN dañado o induce la autodestrucción (apoptosis) de células precancerosas. Toxinas ambientales pueden inducir una <strong>hipermetilación</strong> en el promotor de este gen, "apagándolo". Al silenciarse epigenéticamente, el cuerpo pierde su principal defensa celular y promueve tumores sin que el ADN mute de secuencia.</p>
+            </div>
+            <div class="bg-white p-5 border border-slate-200 rounded-xl">
+              <h4 class="font-bold text-slate-800 mb-2">Diabetes Tipo II</h4>
+              <p>La ingesta habitual de carbohidratos simples y grasas saturadas provoca la <strong>desmetilación</strong> de genes inflamatorios y del transportador de glucosa DPP-4 en el hígado, entorpeciendo la respuesta normal a la insulina. El epigenoma actúa registrando este desequilibrio calórico y perpetuando la resistencia a la insulina.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= MÓDULO 3: SIMULADOR ================= -->
+      <section id="view-3" class="p-6 md:p-8 hidden">
+        <div class="border-b pb-4 mb-6 flex items-center gap-3">
+          <div class="bg-teal-100 text-teal-700 p-2 rounded-lg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A1.79 1.79 0 1114.75 23.5l-5.83-5.83M11.42 15.17l2.42-2.42m-2.42 2.42L5.58 21A1.79 1.79 0 113.08 23.5l5.83-5.83M11.42 15.17l-5.83-5.83M13.84 12.75l5.83-5.83A1.79 1.79 0 1122.17 9.42l-5.83 5.83M13.84 12.75l-2.42 2.42m2.42-2.42l-5.83-5.83M9.42 9.42l5.83-5.83A1.79 1.79 0 1117.67 6.08l-5.83 5.83M9.42 9.42L3.58 3.58A1.79 1.79 0 116.08 1.08l5.83 5.83" /></svg>
+          </div>
+          <div>
+            <h2 class="text-2xl font-bold text-slate-800">Módulo 3: Modelamiento Epigenético Interactivo</h2>
+            <p class="text-sm text-slate-500">Niveles de compactación de la cromatina y reprogramación molecular.</p>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl flex flex-col md:flex-row">
+          
+          <!-- Panel de Mandos -->
+          <div class="w-full md:w-1/3 bg-slate-800 p-6 text-white flex flex-col justify-between border-b md:border-b-0 md:border-r border-slate-700">
+            <div>
+              <h3 class="font-bold text-lg text-teal-400 mb-4 flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-teal-400"></span>
+                Consola de Control
+              </h3>
+              
+              <!-- Slider de Compactación -->
+              <div class="mb-6">
+                <label class="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-2">1. Nivel de Compactación:</label>
+                <input id="compact-slider" type="range" min="1" max="3" value="1" oninput="updateCompactor(this.value)" class="w-full accent-teal-500">
+                <div class="flex justify-between text-[10px] text-slate-500 mt-1.5">
+                  <span>Doble Hélice</span>
+                  <span>Nucleosomas</span>
+                  <span>Marcas Epigenéticas</span>
+                </div>
+              </div>
+
+              <!-- Modificaciones Epigenéticas (Solo activas en Nivel 3) -->
+              <div id="epigenetic-switches" class="space-y-3 hidden">
+                <p class="text-xs font-bold uppercase tracking-wider text-slate-400">2. Alteraciones Químicas (Nivel 3):</p>
+                
+                <label class="flex items-center gap-3 bg-slate-700 p-3 rounded-lg cursor-pointer hover:bg-slate-650 transition">
+                  <input id="check-methyl" type="checkbox" onchange="simulateChemicals()" class="w-5 h-5 text-teal-500 accent-red-500">
+                  <div>
+                    <span class="block font-semibold text-xs text-red-400">Metilar ADN (-CH₃)</span>
+                    <span class="text-[10px] text-slate-400 block">Agrega grupos metilo en el promotor</span>
+                  </div>
+                </label>
+
+                <label class="flex items-center gap-3 bg-slate-700 p-3 rounded-lg cursor-pointer hover:bg-slate-650 transition">
+                  <input id="check-acetyl" type="checkbox" onchange="simulateChemicals()" class="w-5 h-5 text-teal-500 accent-emerald-500">
+                  <div>
+                    <span class="block font-semibold text-xs text-emerald-400">Acetilar Histonas (-COCH₃)</span>
+                    <span class="text-[10px] text-slate-400 block">Modifica químicamente las colas proteicas</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Estado de Transcripción del Gen -->
+            <div class="mt-6 pt-4 border-t border-slate-700">
+              <span class="text-xs text-slate-400 uppercase tracking-wider block">Estado de Expresión Génica:</span>
+              <div id="gen-status-text" class="text-lg font-extrabold text-blue-300 mt-1">Activo / Accesible</div>
+              <p id="gen-description" class="text-xs text-slate-400 mt-1">La doble hélice está expuesta; las enzimas celulares pueden unirse para iniciar la transcripción de proteínas.</p>
+            </div>
+          </div>
+
+          <!-- Visor Molecular Dinámico (SVG) -->
+          <div id="visor-canvas" class="w-full md:w-2/3 h-[350px] md:h-[450px] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-800 to-slate-950 flex flex-col items-center justify-center p-6 relative">
+            
+            <!-- SVG de Doble Hélice (Nivel 1) -->
+            <div id="svg-level-1" class="absolute inset-0 flex items-center justify-center transition-all duration-500">
+              <svg width="200" height="280" viewBox="0 0 100 140" class="overflow-visible">
+                <!-- Hebra 2 (detrás) -->
+                <path d="M 22.0,0 L 22.7,2 L 24.77,4 L 28.11,6 L 32.54,8 L 37.85,10 L 43.77,12 L 50.0,14 L 56.23,16 L 62.15,18 L 67.46,20 L 71.89,22 L 75.23,24 L 77.3,26 L 78.0,28 L 77.3,30 L 75.23,32 L 71.89,34 L 67.46,36 L 62.15,38 L 56.23,40 L 50.0,42 L 43.77,44 L 37.85,46 L 32.54,48 L 28.11,50 L 24.77,52 L 22.7,54 L 22.0,56 L 22.7,58 L 24.77,60 L 28.11,62 L 32.54,64 L 37.85,66 L 43.77,68 L 50.0,70 L 56.23,72 L 62.15,74 L 67.46,76 L 71.89,78 L 75.23,80 L 77.3,82 L 78.0,84 L 77.3,86 L 75.23,88 L 71.89,90 L 67.46,92 L 62.15,94 L 56.23,96 L 50.0,98 L 43.77,100 L 37.85,102 L 32.54,104 L 28.11,106 L 24.77,108 L 22.7,110 L 22.0,112 L 22.7,114 L 24.77,116 L 28.11,118 L 32.54,120 L 37.85,122 L 43.77,124 L 50.0,126 L 56.23,128 L 62.15,130 L 67.46,132 L 71.89,134 L 75.23,136 L 77.3,138 L 78.0,140" fill="none" stroke="#818CF8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                <!-- Puentes de hidrógeno: calculados sobre la misma curva que las hebras, para que siempre coincidan con ellas -->
+                <line x1="75.23" y1="4" x2="24.77" y2="4" stroke="#E2E8F0" stroke-width="2" />
+                <line x1="37.85" y1="18" x2="62.15" y2="18" stroke="#E2E8F0" stroke-width="2" />
+                <line x1="24.77" y1="32" x2="75.23" y2="32" stroke="#E2E8F0" stroke-width="2" />
+                <line x1="62.15" y1="46" x2="37.85" y2="46" stroke="#E2E8F0" stroke-width="2" />
+                <line x1="75.23" y1="60" x2="24.77" y2="60" stroke="#E2E8F0" stroke-width="2" />
+                <line x1="37.85" y1="74" x2="62.15" y2="74" stroke="#E2E8F0" stroke-width="2" />
+                <line x1="24.77" y1="88" x2="75.23" y2="88" stroke="#E2E8F0" stroke-width="2" />
+                <line x1="62.15" y1="102" x2="37.85" y2="102" stroke="#E2E8F0" stroke-width="2" />
+                <line x1="75.23" y1="116" x2="24.77" y2="116" stroke="#E2E8F0" stroke-width="2" />
+                <line x1="37.85" y1="130" x2="62.15" y2="130" stroke="#E2E8F0" stroke-width="2" />
+                <!-- Hebra 1 (delante) -->
+                <path d="M 78.0,0 L 77.3,2 L 75.23,4 L 71.89,6 L 67.46,8 L 62.15,10 L 56.23,12 L 50.0,14 L 43.77,16 L 37.85,18 L 32.54,20 L 28.11,22 L 24.77,24 L 22.7,26 L 22.0,28 L 22.7,30 L 24.77,32 L 28.11,34 L 32.54,36 L 37.85,38 L 43.77,40 L 50.0,42 L 56.23,44 L 62.15,46 L 67.46,48 L 71.89,50 L 75.23,52 L 77.3,54 L 78.0,56 L 77.3,58 L 75.23,60 L 71.89,62 L 67.46,64 L 62.15,66 L 56.23,68 L 50.0,70 L 43.77,72 L 37.85,74 L 32.54,76 L 28.11,78 L 24.77,80 L 22.7,82 L 22.0,84 L 22.7,86 L 24.77,88 L 28.11,90 L 32.54,92 L 37.85,94 L 43.77,96 L 50.0,98 L 56.23,100 L 62.15,102 L 67.46,104 L 71.89,106 L 75.23,108 L 77.3,110 L 78.0,112 L 77.3,114 L 75.23,116 L 71.89,118 L 67.46,120 L 62.15,122 L 56.23,124 L 50.0,126 L 43.77,128 L 37.85,130 L 32.54,132 L 28.11,134 L 24.77,136 L 22.7,138 L 22.0,140" fill="none" stroke="#60A5FA" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+
+            <!-- SVG de Nucleosomas / Collar de Perlas (Nivel 2) -->
+            <div id="svg-level-2" class="absolute inset-0 hidden items-center justify-center transition-all duration-500">
+              <div class="flex items-center gap-6">
+                <!-- Octámero 1 -->
+                <div class="relative w-24 h-24 bg-amber-600 rounded-full border-4 border-amber-400 flex items-center justify-center shadow-lg">
+                  <div class="absolute -inset-1 rounded-full border border-dashed border-sky-400 opacity-60"></div>
+                  <span class="text-white text-[10px] font-bold">Histonas</span>
+                </div>
+                <!-- Octámero 2 -->
+                <div class="relative w-24 h-24 bg-amber-600 rounded-full border-4 border-amber-400 flex items-center justify-center shadow-lg">
+                  <div class="absolute -inset-1 rounded-full border border-dashed border-sky-400 opacity-60"></div>
+                  <span class="text-white text-[10px] font-bold">Histonas</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- SVG de Modificación Epigenética Dinámica (Nivel 3) -->
+            <div id="svg-level-3" class="absolute inset-0 hidden items-center justify-center transition-all duration-500">
+              <div id="epigenetic-container" class="flex gap-12 items-center transition-all duration-500">
+                <!-- Nucleosoma Modificable 1 -->
+                <div id="nucleo-1" class="relative w-28 h-28 bg-amber-700 rounded-full border-4 border-amber-500 flex items-center justify-center transition-all duration-500 shadow-xl">
+                  
+                  <!-- Cola de Histona (Acetilación) -->
+                  <svg id="tail-1" class="absolute -top-6 -right-6 w-16 h-16 transition-all duration-500" viewBox="0 0 100 100">
+                    <path d="M 10,90 Q 40,40 90,30" fill="none" stroke="#F59E0B" stroke-width="4" />
+                    <!-- Grupo Acetilo -->
+                    <circle id="acetyl-marker-1" cx="90" cy="30" r="10" fill="#10B981" class="hidden animate-bounce"/>
+                  </svg>
+
+                  <!-- Grupos Metilos del ADN externo -->
+                  <div id="methyl-markers-1" class="absolute inset-0 rounded-full border-4 border-dashed border-red-500 animate-pulse hidden"></div>
+
+                  <span class="text-white text-[10px] font-bold z-10">Cromatina</span>
+                </div>
+
+                <!-- Nucleosoma Modificable 2 -->
+                <div id="nucleo-2" class="relative w-28 h-28 bg-amber-700 rounded-full border-4 border-amber-500 flex items-center justify-center transition-all duration-500 shadow-xl">
+                  
+                  <!-- Cola de Histona 2 -->
+                  <svg id="tail-2" class="absolute -top-6 -right-6 w-16 h-16 transition-all duration-500" viewBox="0 0 100 100">
+                    <path d="M 10,90 Q 40,40 90,30" fill="none" stroke="#F59E0B" stroke-width="4" />
+                    <circle id="acetyl-marker-2" cx="90" cy="30" r="10" fill="#10B981" class="hidden animate-bounce"/>
+                  </svg>
+
+                  <!-- Metilos 2 -->
+                  <div id="methyl-markers-2" class="absolute inset-0 rounded-full border-4 border-dashed border-red-500 animate-pulse hidden"></div>
+
+                  <span class="text-white text-[10px] font-bold z-10">Cromatina</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Leyenda de colores -->
+            <div class="absolute bottom-4 left-4 right-4 flex justify-between text-[11px] text-slate-400 bg-slate-900/70 p-2 rounded border border-slate-800">
+              <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span> ADN</span>
+              <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Octámero</span>
+              <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> Metilo (-CH₃)</span>
+              <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Acetilo (-COCH₃)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Epigenética en la Cocina -->
+        <div class="mt-8 pt-8 border-t border-slate-100 bg-teal-50/40 p-6 rounded-xl">
+          <h3 class="font-bold text-slate-800 mb-3 text-base flex items-center gap-1.5">
+            <span class="text-lg">🥦</span> Epigenética en la Cocina (Transversalidad Química)
+          </h3>
+          <p class="text-sm text-slate-700 leading-relaxed">
+            Nuestros alimentos no solo aportan calorías, sino también compuestos activos que regulan el epigenoma. Suplementos dietarios y alimentos funcionales son la forma perfecta de conectar la química orgánica con la biología celular de tus alumnos:
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+            <div class="bg-white p-4 rounded-lg border border-slate-200">
+              <strong class="text-teal-800 text-sm block mb-1">Las catequinas del Té Verde (EGCG):</strong>
+              <p class="text-xs text-slate-600">Actúan inhibiendo la metiltransferasa del ADN (DNMT). Esto ayuda a desmetilar y reactivar genes protectores contra el crecimiento descontrolado de células tumorales.</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg border border-slate-200">
+              <strong class="text-emerald-800 text-sm block mb-1">El Sulforafano del Brócoli:</strong>
+              <p class="text-xs text-slate-600">Es un potente inhibidor de las desacetilasas de histonas (HDAC). Al silenciar estas enzimas, la cromatina mantiene sus grupos acetilo cargados positivamente, manteniéndose abierta y activa.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= MÓDULO 4: DIDÁCTICA ================= -->
+      <section id="view-4" class="p-6 md:p-8 hidden">
+        <div class="border-b pb-4 mb-6 flex items-center gap-3">
+          <div class="bg-amber-100 text-amber-700 p-2 rounded-lg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+          </div>
+          <div>
+            <h2 class="text-2xl font-bold text-slate-800">Módulo 4: De la Teoría al Aula de Ciencias</h2>
+            <p class="text-sm text-slate-500">Diseño de secuencias didácticas basadas en el currículum de Ciencias para la Ciudadanía.</p>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-12 gap-8">
+          
+          <!-- Ruleta de Contextos Sociocientíficos -->
+          <div class="md:col-span-6 bg-slate-50 p-6 rounded-2xl border border-slate-200 text-center flex flex-col items-center justify-between min-h-[420px]">
+            <div>
+              <h3 class="font-bold text-slate-800 text-lg mb-2">Generador de Problemas Situados</h3>
+              <p class="text-xs text-slate-500 max-w-sm mx-auto mb-4">Gira la ruleta interactiva para obtener un caso curricular y diseñar una pregunta para tus alumnos.</p>
+            </div>
+
+            <!-- Gráfico de Ruleta -->
+            <div class="relative w-40 h-40 flex items-center justify-center my-4">
+              <!-- Círculo Ruleta -->
+              <div id="wheel" class="w-full h-full rounded-full border-4 border-slate-700 bg-indigo-100 relative overflow-hidden flex items-center justify-center shadow-lg">
+                <!-- Secciones coloreadas -->
+                <div class="absolute inset-0 bg-red-100" style="clip-path: polygon(50% 50%, 0 0, 100% 0);"></div>
+                <div class="absolute inset-0 bg-emerald-100" style="clip-path: polygon(50% 50%, 100% 0, 100% 100%);"></div>
+                <div class="absolute inset-0 bg-amber-100" style="clip-path: polygon(50% 50%, 100% 100%, 0 100%);"></div>
+                <div class="absolute inset-0 bg-teal-100" style="clip-path: polygon(50% 50%, 0 100%, 0 0);"></div>
+                
+                <span class="absolute text-slate-600 font-bold text-xs pointer-events-none">TEMAS</span>
+              </div>
+              <!-- Puntero -->
+              <div class="absolute top-0 w-4 h-6 bg-slate-800" style="clip-path: polygon(50% 100%, 0 0, 100% 0);"></div>
+            </div>
+
+            <button onclick="spinWheel()" id="spin-btn" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition shadow-md hover:shadow-lg">
+              Girar Ruleta
+            </button>
+
+            <!-- Ficha Didáctica Resultante -->
+            <div id="roulette-result" class="hidden w-full bg-white p-4 rounded-xl border border-amber-200 mt-4 text-left animate-fade-in">
+              <!-- Llenado dinámicamente -->
+            </div>
+          </div>
+
+          <!-- Formulario de Reflexión Final (Ticket de Salida) -->
+          <div class="md:col-span-6 bg-indigo-50/50 p-6 rounded-2xl border border-indigo-100 flex flex-col justify-between">
+            <div id="exit-form-container">
+              <h3 class="font-bold text-indigo-950 text-lg mb-2 flex items-center gap-1.5">
+                <span>📝</span> Ticket de Salida
+              </h3>
+              <p class="text-xs text-slate-600 mb-4">Completa esta breve reflexión para recibir tus orientaciones didácticas finales y consolidar el taller.</p>
+
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">1. ¿Qué noción errónea del determinismo biológico detectas en tus estudiantes que podrías abordar con la Epigenética?</label>
+                  <textarea id="exit-q1" rows="3" class="w-full text-xs p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none" placeholder="Escribe tu observación o experiencia aquí..."></textarea>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">2. ¿Cómo evaluarías el uso de simuladores moleculares de compactación para propiciar la disonancia cognitiva?</label>
+                  <textarea id="exit-q2" rows="3" class="w-full text-xs p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none" placeholder="Ingresa tus propuestas pedagógicas..."></textarea>
+                </div>
+              </div>
+
+              <button onclick="submitExit()" class="w-full mt-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-sm shadow transition">
+                Enviar Reflexión y Concluir
+              </button>
+            </div>
+
+            <!-- Certificado/Mensaje Final -->
+            <div id="exit-success-container" class="hidden text-center py-8">
+              <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              </div>
+              <h4 class="text-xl font-bold text-slate-800">¡Reflexión Enviada Exitosamente!</h4>
+              <p class="text-sm text-slate-600 mt-2">Has completado el ciclo del taller. Tus propuestas son valiosas para construir una ciudadanía científicamente alfabetizada y libre de determinismos.</p>
+              <div class="bg-white p-4 rounded-lg border border-slate-200 mt-6 text-xs text-left text-slate-500">
+                <strong class="block text-slate-700 mb-1">Siguientes pasos:</strong>
+                Puedes compartir estas secuencias, utilizar el modelamiento en tu laboratorio escolar o invitar a otros profesores a reflexionar utilizando este Canvas Interactivo.
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- CONTROL DE PIE DE NAVEGACIÓN -->
+  <footer class="max-w-6xl mx-auto w-full p-4 flex justify-between">
+    <button id="prev-btn" onclick="navigateTab(-1)" class="flex items-center gap-2 px-4 py-2 bg-white text-indigo-700 rounded-lg shadow hover:bg-slate-50 font-semibold text-sm border border-slate-200 opacity-50 cursor-not-allowed" disabled>
+      ← Anterior
+    </button>
+    <button id="next-btn" onclick="navigateTab(1)" class="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 font-semibold text-sm">
+      Siguiente →
+    </button>
+  </footer>
+
+  <!-- ================= CÓDIGO DE LOGICA DE CONTROL ================= -->
+  <script>
+    // Configuración global del taller
+    let activeModule = 0;
+    const totalModules = 4;
+
+    function switchTab(modId) {
+      // Ocultar todas las pestañas de contenido
+      for (let i = 0; i <= totalModules; i++) {
+        document.getElementById(`view-${i}`).classList.add('hidden');
+        const navBtn = document.getElementById(`nav-btn-${i}`);
+        if (navBtn) {
+          navBtn.className = "px-3 py-2 rounded-lg text-xs md:text-sm font-medium text-indigo-100 hover:bg-indigo-800 transition whitespace-nowrap";
+        }
+      }
+
+      // Mostrar la pestaña seleccionada
+      document.getElementById(`view-${modId}`).classList.remove('hidden');
+      const activeNavBtn = document.getElementById(`nav-btn-${modId}`);
+      if (activeNavBtn) {
+        activeNavBtn.className = "px-3 py-2 rounded-lg text-xs md:text-sm font-medium bg-indigo-700 text-white shadow-inner transition whitespace-nowrap";
+      }
+
+      // Actualizar variable de estado
+      activeModule = modId;
+
+      // Actualizar pie de navegación
+      const prevBtn = document.getElementById('prev-btn');
+      const nextBtn = document.getElementById('next-btn');
+
+      if (activeModule === 0) {
+        prevBtn.disabled = true;
+        prevBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      } else {
+        prevBtn.disabled = false;
+        prevBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      }
+
+      if (activeModule === totalModules) {
+        nextBtn.disabled = true;
+        nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      } else {
+        nextBtn.disabled = false;
+        nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      }
+    }
+
+    function navigateTab(direction) {
+      const target = activeModule + direction;
+      if (target >= 0 && target <= totalModules) {
+        switchTab(target);
+      }
+    }
+
+    // LÓGICA DEL TICKET DE ENTRADA (Módulo 1)
+    function submitTicket(option) {
+      const ticketContainer = document.getElementById('ticket-options');
+      const feedbackContainer = document.getElementById('ticket-feedback');
+
+      ticketContainer.classList.add('hidden');
+      feedbackContainer.classList.remove('hidden');
+
+      let responseHtml = "";
+      if (option === 1) {
+        responseHtml = `<h4 class="font-bold text-red-600 mb-1">Enfoque Determinista</h4>
+        <p class="text-xs">Este pensamiento fue la base del siglo XX. Hoy sabemos que heredar un gen es solo la "semilla", mientras que el estilo de vida epigenético dicta si esa semilla germina o permanece inerte.</p>`;
+      } else if (option === 2) {
+        responseHtml = `<h4 class="font-bold text-emerald-600 mb-1">¡Excelente Orientación Epigenética!</h4>
+        <p class="text-xs">Estás en total sintonía con la ciencia moderna. Entiendes que el genoma posee maleabilidad, lo cual empodera al ciudadano en la gestión proactiva de su salud.</p>`;
+      } else {
+        responseHtml = `<h4 class="font-bold text-amber-600 mb-1 font-semibold">Ambientalista Extremo</h4>
+        <p class="text-xs">Aunque el ambiente es crucial, no podemos negar la base genética celular. La epigenética reconcilia ambos extremos mediante enlaces químicos que controlan el material hereditario.</p>`;
+      }
+
+      feedbackContainer.innerHTML = responseHtml;
+    }
+
+    // LÓGICA TARJETAS INTERACTIVAS (Módulo 1)
+    function toggleCard(cardElement) {
+      const innerCard = cardElement.querySelector('.transform-style-3d');
+      innerCard.classList.toggle('rotate-y-180');
+    }
+
+    // LÓGICA CASO GEMELAS (Módulo 2)
+    const factorData = {
+      dieta: {
+        title: "🍔 Dieta alimentaria nutricional",
+        text: "Magda llevó una dieta rica en grasas y azúcares. Esto favoreció la <strong>desmetilación</strong> del promotor del gen hepático DPP-4, elevando drásticamente su susceptibilidad a la intolerancia a la glucosa y sobrepeso. Carolina, al llevar una dieta balanceada, conservó la metilación metódica y protectora en este gen, evitando que la enfermedad se manifieste celularmente."
+      },
+      toxicos: {
+        title: "🏭 Exposición química (Bisfenol-A)",
+        text: "Magda estuvo expuesta de forma continua en su trabajo a plásticos policarbonatados con <strong>BPA (Bisfenol-A)</strong>. El BPA actúa directamente sobre los niveles de metilación celular, alterando el silenciamiento epigenético normal y promoviendo el encendido de genes implicados en la acumulación de grasas (adipogénesis)."
+      },
+      ejercicio: {
+        title: "🏃‍♀️ Hábitos físicos (Ejercicio)",
+        text: "Carolina incorporó rutinas de ejercicio regular. A nivel molecular, la actividad física estimula la <strong>acetilación de histonas</strong> en los músculos esqueléticos, manteniendo abierta la cromatina de genes claves encargados del consumo de oxígeno, rendimiento metabólico y sensibilidad celular a la insulina."
+      }
+    };
+
+    function revealFactor(factorKey) {
+      const display = document.getElementById('factor-display');
+      const data = factorData[factorKey];
+      
+      display.innerHTML = `
+        <div class="text-left animate-fade-in w-full">
+          <h4 class="font-bold text-slate-800 text-sm mb-2 border-b pb-1.5 flex items-center gap-1">
+            <span>🔬</span> ${data.title}
+          </h4>
+          <p class="text-xs text-slate-600 leading-relaxed">${data.text}</p>
+        </div>
+      `;
+    }
+
+    // LÓGICA SIMULADOR DE ADN (Módulo 3)
+    function updateCompactor(val) {
+      const level = parseInt(val);
+      
+      // Ocultar todos los SVGs
+      document.getElementById('svg-level-1').classList.add('hidden');
+      document.getElementById('svg-level-2').classList.add('hidden');
+      document.getElementById('svg-level-3').classList.add('hidden');
+      document.getElementById('svg-level-1').classList.remove('flex');
+      document.getElementById('svg-level-2').classList.remove('flex');
+      document.getElementById('svg-level-3').classList.remove('flex');
+
+      // Ocultar interruptores epigenéticos
+      const switches = document.getElementById('epigenetic-switches');
+      switches.classList.add('hidden');
+
+      if (level === 1) {
+        document.getElementById('svg-level-1').classList.remove('hidden');
+        document.getElementById('svg-level-1').classList.add('flex');
+        document.getElementById('gen-status-text').innerHTML = "Activo / Libre";
+        document.getElementById('gen-status-text').className = "text-lg font-extrabold text-blue-400 mt-1";
+        document.getElementById('gen-description').innerHTML = "La doble hélice está completamente expuesta. Las polimerasas celulares pueden iniciar transcripción libremente.";
+      } else if (level === 2) {
+        document.getElementById('svg-level-2').classList.remove('hidden');
+        document.getElementById('svg-level-2').classList.add('flex');
+        document.getElementById('gen-status-text').innerHTML = "Semi-compacto";
+        document.getElementById('gen-status-text').className = "text-lg font-extrabold text-amber-400 mt-1";
+        document.getElementById('gen-description').innerHTML = "La cromatina se encuentra envuelta sobre octámeros de histonas (collar de perlas). La transcripción está ligeramente obstaculizada.";
+      } else if (level === 3) {
+        document.getElementById('svg-level-3').classList.remove('hidden');
+        document.getElementById('svg-level-3').classList.add('flex');
+        switches.classList.remove('hidden');
+        simulateChemicals();
+      }
+    }
+
+    function simulateChemicals() {
+      const isMethyl = document.getElementById('check-methyl').checked;
+      const isAcetyl = document.getElementById('check-acetyl').checked;
+
+      const container = document.getElementById('epigenetic-container');
+      const markerM1 = document.getElementById('methyl-markers-1');
+      const markerM2 = document.getElementById('methyl-markers-2');
+      const markerA1 = document.getElementById('acetyl-marker-1');
+      const markerA2 = document.getElementById('acetyl-marker-2');
+
+      const nucleo1 = document.getElementById('nucleo-1');
+      const nucleo2 = document.getElementById('nucleo-2');
+
+      const statusText = document.getElementById('gen-status-text');
+      const descText = document.getElementById('gen-description');
+
+      // Resetear clases de animación
+      container.className = "flex gap-12 items-center transition-all duration-500";
+      markerM1.classList.add('hidden');
+      markerM2.classList.add('hidden');
+      markerA1.classList.add('hidden');
+      markerA2.classList.add('hidden');
+
+      nucleo1.className = "relative w-28 h-28 bg-amber-700 rounded-full border-4 border-amber-500 flex items-center justify-center transition-all duration-500 shadow-xl";
+      nucleo2.className = "relative w-28 h-28 bg-amber-700 rounded-full border-4 border-amber-500 flex items-center justify-center transition-all duration-500 shadow-xl";
+
+      if (isMethyl && !isAcetyl) {
+        // Metilado y No Acetilado: Compactado (Apagado)
+        container.className = "flex gap-2 items-center transition-all duration-500 scale-90";
+        markerM1.classList.remove('hidden');
+        markerM2.classList.remove('hidden');
+        nucleo1.classList.add('border-red-600', 'bg-red-950');
+        nucleo2.classList.add('border-red-600', 'bg-red-950');
+
+        statusText.innerHTML = "SILENCIADO / APAGADO";
+        statusText.className = "text-lg font-extrabold text-red-500 mt-1";
+        descText.innerHTML = "La cromatina se condensa fuertemente en heterocromatina. Los promotores del gen están inaccesibles por culpa de los grupos metilo. No hay transcripción.";
+      } 
+      else if (!isMethyl && isAcetyl) {
+        // Acetilado y No Metilado: Relajado (Encendido)
+        container.className = "flex gap-20 items-center transition-all duration-500 scale-105";
+        markerA1.classList.remove('hidden');
+        markerA2.classList.remove('hidden');
+        nucleo1.classList.add('border-emerald-400', 'bg-amber-500');
+        nucleo2.classList.add('border-emerald-400', 'bg-amber-500');
+
+        statusText.innerHTML = "ACTIVO / ENCENDIDO";
+        statusText.className = "text-lg font-extrabold text-green-400 mt-1";
+        descText.innerHTML = "La cromatina adopta un estado de eucromatina gracias a la acetilación. Los genes se exponen totalmente a los factores de transcripción celulares.";
+      }
+      else if (isMethyl && isAcetyl) {
+        // Ambos: Estado dinámico mixto
+        container.className = "flex gap-10 items-center transition-all duration-500";
+        markerM1.classList.remove('hidden');
+        markerM2.classList.remove('hidden');
+        markerA1.classList.remove('hidden');
+        markerA2.classList.remove('hidden');
+        nucleo1.classList.add('border-blue-400', 'bg-amber-800');
+        nucleo2.classList.add('border-blue-400', 'bg-amber-800');
+
+        statusText.innerHTML = "Estado Dinámico / Parcial";
+        statusText.className = "text-lg font-extrabold text-blue-300 mt-1";
+        descText.innerHTML = "Se presentan ambas modificaciones simultáneas. El nivel final de expresión dependerá del equilibrio químico transitorio de la célula.";
+      }
+      else {
+        // Basal
+        statusText.innerHTML = "Estado Basal / Cerrado";
+        statusText.className = "text-lg font-extrabold text-slate-300 mt-1";
+        descText.innerHTML = "Cromatina en estado inactivo estándar. Se requiere un estímulo químico celular para inducir accesibilidad génica.";
+      }
+    }
+
+    // LÓGICA DE LA RULETA (Módulo 4)
+    const contexts = [
+      {
+        title: "🍎 Nutrición Adolescente en el Liceo",
+        desc: "Tu establecimiento tiene altos índices de sobrepeso y el quiosco escolar solo vende ultraprocesados. Diseña una estrategia pedagógica que muestre la influencia de la fructosa sobre la expresión celular.",
+        prompt: "¿Cómo el exceso sistemático de azúcar genera marcas epigenéticas heredables en el metabolismo de la insulina de tus futuros nietos?"
+      },
+      {
+        title: "🌾 Exposición a Agroquímicos locales",
+        desc: "Varios estudiantes del liceo habitan en entornos agrícolas rurales y están constantemente expuestos a fumigaciones aéreas agrícolas en temporada de cosecha.",
+        prompt: "¿De qué forma la exposición ocupacional prolongada a pesticidas provoca marcas epigenéticas (silenciamiento de p53) sin cambiar una sola base de su ADN?"
+      },
+      {
+        title: "🍳 Especialidad Gastronomía (Liceo TP)",
+        desc: "Los estudiantes de hotelería y gastronomía diseñan menús de restaurantes pero desconocen el potencial biomédico molecular de los alimentos sobre la salud.",
+        prompt: "¿Cómo fundamentar científicamente una propuesta culinaria que active enzimas rejuvenecedoras celulares (modulando metilaciones de histonas)?"
+      },
+      {
+        title: "🧠 Estrés Escolar y Salud Mental",
+        desc: "Se observa un ambiente tenso de estrés académico crónico, sumado a condiciones socioeconómicas vulnerables en las familias del entorno escolar.",
+        prompt: "¿De qué manera el cortisol generado por el estrés continuo modifica la metilación de genes cerebrales asociados al autocontrol y la resiliencia?"
+      }
+    ];
+
+    function spinWheel() {
+      const wheel = document.getElementById('wheel');
+      const spinBtn = document.getElementById('spin-btn');
+      const resultBox = document.getElementById('roulette-result');
+
+      spinBtn.disabled = true;
+      resultBox.classList.add('hidden');
+      wheel.classList.add('spinning');
+
+      setTimeout(() => {
+        wheel.classList.remove('spinning');
+        spinBtn.disabled = false;
+
+        const randomIndex = Math.floor(Math.random() * contexts.length);
+        const choice = contexts[randomIndex];
+
+        resultBox.innerHTML = `
+          <h4 class="font-extrabold text-amber-800 text-sm mb-1">${choice.title}</h4>
+          <p class="text-xs text-slate-600 leading-relaxed mb-3">${choice.desc}</p>
+          <div class="bg-amber-50 p-3 rounded-lg border border-amber-100">
+            <strong class="text-xs text-amber-900 block mb-1">Pregunta sociocientífica guía:</strong>
+            <p class="text-xs text-slate-700 italic">"${choice.prompt}"</p>
+          </div>
+        `;
+        resultBox.classList.remove('hidden');
+      }, 1500);
+    }
+
+    // LÓGICA ENVIAR TICKET SALIDA (Módulo 4)
+    function submitExit() {
+      const q1 = document.getElementById('exit-q1').value;
+      const q2 = document.getElementById('exit-q2').value;
+
+      if (!q1 || !q2) {
+        alert("Por favor, responde ambas preguntas antes de finalizar.");
+        return;
+      }
+
+      document.getElementById('exit-form-container').classList.add('hidden');
+      document.getElementById('exit-success-container').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
